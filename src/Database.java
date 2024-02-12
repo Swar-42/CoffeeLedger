@@ -6,19 +6,29 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
+
 import org.h2.tools.RunScript;
 
 
 public class Database {
 
     private Connection conn;
+    private static Database instance = null;
     
-    public Database() {
+    private Database() {
         try {
             load();
         } catch (ClassNotFoundException | SQLException | IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static Database getInstance() {
+        if (instance == null) {
+            instance = new Database();
+        }
+        return instance;
     }
 
     public void close() throws SQLException {
@@ -60,22 +70,17 @@ public class Database {
      * @throws SQLException 
      */
     public void addPerson(String name) throws SQLException {
-        Statement stmt = conn.createStatement();
-        // make sure name does not exist in table
-        String sql = 
-          "SELECT \'" + name + "\' IN "
-        + "  (SELECT name FROM people);"; 
-        ResultSet rs = stmt.executeQuery(sql);
-        rs.next();
-        String s = rs.getString(1);
-        if (s.equals("TRUE")) {
+        if (dataExists(name, "people")) {
             throw new IllegalArgumentException(name + " already exists in table people");
         }
 
-        sql = 
+        Statement stmt = conn.createStatement();
+        String sql = 
           "INSERT INTO people (name, bought, paid) "
         + "VALUES (\'" + name + "\', 0, 0);";
         stmt.execute(sql);
+
+        stmt.close();
     }
 
     /**
@@ -100,22 +105,17 @@ public class Database {
      * @throws SQLException
      */
     public void addOrder(String name, double price) throws SQLException {
-        Statement stmt = conn.createStatement();
-        // make sure name does not exist in table
-        String sql = 
-          "SELECT \'" + name + "\' IN "
-        + "  (SELECT name FROM orders);"; 
-        ResultSet rs = stmt.executeQuery(sql);
-        rs.next();
-        String s = rs.getString(1);
-        if (s.equals("TRUE")) {
+        if (dataExists(name, "orders")) {
             throw new IllegalArgumentException(name + " already exists in table orders");
         }
-
-        sql = 
+        
+        Statement stmt = conn.createStatement();
+        String sql = 
           "INSERT INTO orders (name, price) "
         + "VALUES (\'" + name + "\', " + price + ");";
         stmt.execute(sql);
+
+        stmt.close();
     }
 
     /**
@@ -131,6 +131,107 @@ public class Database {
         }
         rs.close();
         stmt.close();
+    }
+
+    /**
+     * adds a group order to the database, updating group_orders and group_order_details
+     * @param name - name of the group order
+     * @param personOrderMap - map of person name to order name for each person ordering
+     * @throws SQLException
+     */
+    public void addGroupOrder(String name, Map<String, String> personOrderMap) throws SQLException{
+        if (dataExists(name, "group_orders")) {
+            throw new IllegalArgumentException(name + " already exists in table group_orders");
+        }
+        // add to group_orders
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "INSERT INTO group_orders (name) "
+        + "VALUES (\'" + name + "\');";
+        stmt.execute(sql);
+
+        // add to group_order_details
+        for (String person : personOrderMap.keySet()) {
+            int personId = getId(person, "people");
+            int orderId = getId(personOrderMap.get(person), "orders");
+            int nameId = getId(name, "group_orders");
+            sql = 
+              "INSERT INTO group_order_details (group_order_id, person_id, order_id) "
+            + "VALUES (" + nameId + ", " + personId + ", " + orderId + ")";
+            stmt.execute(sql);
+        }
+
+        stmt.close();
+    }
+
+    /**
+     * prints the group_orders table
+     * @throws SQLException
+     */
+    public void printGroupOrders() throws SQLException {
+        Statement stmt = conn.createStatement();
+        String query = "SELECT * FROM group_orders";
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            System.out.println(rs.getString(1) + " " + rs.getString(2));
+        }
+        rs.close();
+        stmt.close();
+    }
+
+    /**
+     * prints the group_order_details table
+     * @throws SQLException
+     */
+    public void printGroupOrderDetails() throws SQLException {
+        Statement stmt = conn.createStatement();
+        String query = "SELECT * FROM group_order_details";
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            System.out.println(rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3));
+        }
+        rs.close();
+        stmt.close();
+    }
+
+    public void clear() throws SQLException{
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "DELETE FROM group_order_details WHERE TRUE; "
+        + "DELETE FROM group_orders WHERE TRUE; "
+        + "DELETE FROM orders WHERE TRUE; "
+        + "DELETE FROM people WHERE TRUE; ";
+        stmt.execute(sql);
+        stmt.close();
+    }
+
+    private boolean dataExists(String dataName, String tableName) throws SQLException {
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "SELECT \'" + dataName + "\' IN "
+        + "  (SELECT name FROM " + tableName + ");"; 
+        ResultSet rs = stmt.executeQuery(sql);
+        rs.next();
+        String s = rs.getString(1);
+
+        stmt.close();
+        rs.close();
+
+
+        return (s.equals("TRUE"));
+    }
+
+    private int getId(String name, String tableName) throws SQLException {
+        if (!dataExists(name, tableName)) {
+            throw new IllegalArgumentException(name + " not found in table " + tableName);
+        }
+
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "SELECT id FROM " + tableName + " WHERE name = \'" + name + "\';";
+        ResultSet rs = stmt.executeQuery(sql);
+        rs.next();
+        return rs.getInt(1);
     }
 
     private void runScript(String filepath) throws SQLException, IOException {
