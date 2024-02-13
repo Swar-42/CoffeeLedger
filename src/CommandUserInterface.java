@@ -59,13 +59,20 @@ public class CommandUserInterface {
     }
 
     private static void promptNextPayer() {
-        // try {
-        //     String personToPay = db.mostDebt();
-        // } catch (SQLException e) {
-        //     // TODO Auto-generated catch block
-        //     e.printStackTrace();
-        // }
-        // System.out.println("")
+        String personToPay;
+        double debt;
+        try {
+            personToPay = db.mostDebt();
+            debt = db.getDebt(personToPay);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return;
+        }
+        
+        System.out.println(String.format("%s should pay next! (Owes: $%,.2d)", personToPay, debt));
+        
+        
     }
 
 

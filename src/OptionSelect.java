@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -13,25 +14,35 @@ public class OptionSelect {
     }
 
     public int prompt() {
-        System.out.println(title);
-        for (int i = 0; i < options.size(); i++) {
-            System.out.println(i+1 + ") " + options.get(i));
-        }
-        System.out.println("0) " + exitString);
-        System.out.println("Enter a number between 1 and " + options.size() + ", or 0 to " + exitString + ".");
-        System.out.println("Selection: ");
-
         Scanner scanner = new Scanner(System.in);
-        String input = scanner.nextLine();
-        scanner.close();
-        
-        try {
-            int selection = Integer.parseInt(input);
-            if (selection <= options.size()) {
-                return selection;
+        while (true) {
+            System.out.println(title);
+            for (int i = 0; i < options.size(); i++) {
+                System.out.println(i+1 + ") " + options.get(i));
             }
-        } catch (NumberFormatException e) { }
-        System.out.println("Please enter a number between 0 and " + options.size() + ".");
-        return prompt();
+            System.out.println("0) " + exitString);
+            System.out.println("Enter a number between 1 and " + options.size() + ", or 0 to " + exitString + ".");
+            System.out.print("Selection: ");
+
+            String input = scanner.nextLine();
+            
+            try {
+                int selection = Integer.parseInt(input);
+                if (selection <= options.size()) {
+                    scanner.close();
+                    return selection;
+                }
+            } catch (NumberFormatException e) { }
+            System.out.println("invalid input.");
+        }
+    }
+
+    public static void main(String[] args) {
+        List<String> options = new ArrayList<String>();
+        options.add("option 1");
+        options.add("option 2");
+        options.add("this is the third one");
+        OptionSelect test = new OptionSelect("choose an option.", options, "exit the program");
+        test.prompt();
     }
 }
