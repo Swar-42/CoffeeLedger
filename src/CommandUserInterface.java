@@ -104,21 +104,83 @@ public class CommandUserInterface {
         System.out.println();
         editOrder(orderNames.get(choice-1), orderPrices.get(choice-1));
         System.out.println();
+
+        editOrders();
     }
 
     private static void editOrder(String name, String price) {
         List<String> editSelection = new ArrayList<String>();
         editSelection.add("Edit name");
         editSelection.add("Edit price");
-        OptionSelect editSelect = new OptionSelect(String.format("Selected: %-30s : $%s", name, price), editSelection, "Back");
+        editSelection.add("Delete order");
+        OptionSelect editSelect = new OptionSelect(String.format("Selected: %s : $%s", name, price), editSelection, "Back");
         int choice = editSelect.prompt();
 
         switch (choice) {
             case 1:
+                name = editOrderName(name);
+                break;
             case 2:
+                price = editOrderPrice(name, price);
+                break;
+            case 3:
+                Boolean deleted = deleteOrder(name);
+                if (deleted) {
+                    return;
+                }
+                break;
             case 0:
                 return;
         }
+
+        System.out.println();
+        editOrder(name, price);
+    }
+
+    private static Boolean deleteOrder(String name) {
+        BooleanSelect confirm = new BooleanSelect("Are you sure you want to delete the order \"" + name + "\"?");
+        Boolean doDelete = confirm.prompt();
+        if (doDelete) {
+            try {
+                db.removeOrder(name);
+                return true;
+            } catch (SQLException e) {
+                System.err.println("Unable to delete order " + name);
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    private static String editOrderName(String name) {
+        String newName = Input.getString("Enter the new name for \"" + name + "\": ");
+        String prevName = name;
+        try {
+            db.changeOrderName(name, newName);
+            name = newName;
+        } catch (SQLException e) {
+            System.err.println("Unable to change name of order \"" + name + "\"");
+            e.printStackTrace();
+            return name;
+        }
+        System.out.println("Changed the name of order from \"" + prevName + "\" to \"" + newName + "\"");
+        return newName;
+    }
+
+    private static String editOrderPrice(String name, String price) {
+        double newPrice = Input.getDouble("Enter the new price for \"" + name + "\": ");
+        String prevPrice = price;
+        String priceStr;
+        try {
+            db.changeOrderPrice(name, newPrice);
+            priceStr = String.format("%,.2f", newPrice);
+        } catch (SQLException e) {
+            System.err.println("Unable to change price of order \"" + name + "\"");
+            e.printStackTrace();
+            return prevPrice;
+        }
+        System.out.println("Changed the price of order \"" + name + "\" from $" + prevPrice + " to $" + priceStr);
+        return "" + newPrice;
     }
 
     private static void addOrder() {
@@ -175,25 +237,25 @@ public class CommandUserInterface {
     public static void main(String[] args) {
         CoffeeLedger db = CoffeeLedger.getInstance();
         try {
-            // db.clear();
+            db.clear();
 
-            // db.addPerson("John");
-            // db.addPerson("Mike");
-            // db.addPerson("Chris");
+            db.addPerson("John");
+            db.addPerson("Mike");
+            db.addPerson("Chris");
 
-            // // db.printPeople();
-            // db.addOrder("Large iced coffee", 4.00);
-            // db.addOrder("Small hot coffee", 2.25);
-            // // db.printOrders();
+            // db.printPeople();
+            db.addOrder("Large iced coffee", 4.00);
+            db.addOrder("Small hot coffee", 2.25);
+            // db.printOrders();
 
-            // Map<String, String> groupOrder = new HashMap<String, String>();
-            // groupOrder.put("John", "Large iced coffee");
-            // groupOrder.put("Chris", "Small hot coffee");
-            // groupOrder.put("Mike", "Large iced coffee");
-            // db.addGroupOrder("Order 1", groupOrder);
-            // // db.printGroupOrders();
-            // // System.out.println("details:");
-            // // db.printGroupOrderDetails();
+            Map<String, String> groupOrder = new HashMap<String, String>();
+            groupOrder.put("John", "Large iced coffee");
+            groupOrder.put("Chris", "Small hot coffee");
+            groupOrder.put("Mike", "Large iced coffee");
+            db.addGroupOrder("Order 1", groupOrder);
+            // db.printGroupOrders();
+            // System.out.println("details:");
+            // db.printGroupOrderDetails();
 
             // Map<String, Double> orderPrices = db.getGroupOrder("Order 1");
             // for (String person : orderPrices.keySet()) {

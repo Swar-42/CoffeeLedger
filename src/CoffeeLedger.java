@@ -310,6 +310,14 @@ public class CoffeeLedger {
         return out;
     }
 
+    public void changeOrderName(String currName, String newName) throws SQLException {
+        changeValue(currName, "name", "\'" + newName + "\'", "orders");
+    }
+
+    public void changeOrderPrice(String name, double newPrice) throws SQLException {
+        changeValue(name, "price", String.format("%,.2f", newPrice), "orders");
+    }
+
     public List<String> getOrderNames() throws SQLException {
         return getColumn("name", "orders");
     }
@@ -344,6 +352,10 @@ public class CoffeeLedger {
         return out;
     }
 
+    public void removeOrder(String name) throws SQLException {
+        removeRow(name, "orders");
+    }
+
     /**
      * clears all tables of all rows
      * @throws SQLException
@@ -356,6 +368,29 @@ public class CoffeeLedger {
         + "DELETE FROM orders WHERE TRUE; "
         + "DELETE FROM people WHERE TRUE; ";
         stmt.execute(sql);
+        stmt.close();
+    }
+
+    private void changeValue(String rowName, String colName, String newValue, String tableName) throws SQLException {
+        int id = getId(rowName, tableName);
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "UPDATE "+ tableName + " SET "
+        +  colName + " = " + newValue + " "
+        + "WHERE id = " + id + ";";
+        stmt.execute(sql);
+
+        stmt.close();
+    }
+
+    private void removeRow(String rowName, String tableName) throws SQLException {
+        int id = getId(rowName, tableName);
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "DELETE FROM " + tableName + " "
+        + "WHERE id = " + id + ";";
+        stmt.execute(sql);
+
         stmt.close();
     }
 

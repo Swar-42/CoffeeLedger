@@ -27,4 +27,17 @@ public class Input {
             System.out.println("Invalid input (enter a visible string).");
         }
     }
+
+    public static double getDouble(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine();
+            double output;
+            try {
+                output = Double.parseDouble(input);
+                return output;
+            } catch (NumberFormatException e) { }
+            System.out.println("Invalid input (enter a decimal value).");
+        }
+    }
 }
