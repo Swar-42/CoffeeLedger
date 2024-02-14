@@ -310,6 +310,10 @@ public class CoffeeLedger {
         return out;
     }
 
+    public String getOrderPrice(String orderName) throws SQLException {
+        return getValue(orderName,  "price", "orders");
+    }
+
     public void changeOrderName(String currName, String newName) throws SQLException {
         changeValue(currName, "name", "\'" + newName + "\'", "orders");
     }
@@ -338,22 +342,20 @@ public class CoffeeLedger {
         return getColumn("paid", "people");
     }
 
-    private List<String> getColumn(String colName, String tableName) throws SQLException {
-        Statement stmt = conn.createStatement();
-        String sql = "SELECT " + colName + " FROM " + tableName + ";";
-        ResultSet rs = stmt.executeQuery(sql);
-        List<String> out = new ArrayList<String>();
-        while (rs.next()) {
-            out.add(rs.getString(1));
-        }
-
-        stmt.close();
-        rs.close();
-        return out;
-    }
-
     public void removeOrder(String name) throws SQLException {
         removeRow(name, "orders");
+    }
+
+    public boolean orderExists(String name) throws SQLException {
+        return dataExists(name, "orders");
+    }
+
+    public boolean personExists(String name) throws SQLException {
+        return dataExists(name, "people");
+    }
+
+    public boolean groupOrderExists(String name) throws SQLException {
+        return dataExists(name, "group_orders");
     }
 
     /**
@@ -369,6 +371,35 @@ public class CoffeeLedger {
         + "DELETE FROM people WHERE TRUE; ";
         stmt.execute(sql);
         stmt.close();
+    }
+
+    private List<String> getColumn(String colName, String tableName) throws SQLException {
+        Statement stmt = conn.createStatement();
+        String sql = "SELECT " + colName + " FROM " + tableName + ";";
+        ResultSet rs = stmt.executeQuery(sql);
+        List<String> out = new ArrayList<String>();
+        while (rs.next()) {
+            out.add(rs.getString(1));
+        }
+
+        stmt.close();
+        rs.close();
+        return out;
+    }
+
+    private String getValue(String rowName, String colName, String tableName) throws SQLException {
+        int id = getId(rowName, tableName);
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "SELECT " + colName + " FROM " + tableName + " "
+        + "WHERE id = " + id + ";";
+        ResultSet rs = stmt.executeQuery(sql);
+        rs.next();
+        String out = rs.getString(1);
+
+        rs.close();
+        stmt.close();
+        return out;
     }
 
     private void changeValue(String rowName, String colName, String newValue, String tableName) throws SQLException {

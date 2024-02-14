@@ -143,6 +143,7 @@ public class CommandUserInterface {
         if (doDelete) {
             try {
                 db.removeOrder(name);
+                System.out.println("Removed order \"" + name + "\".");
                 return true;
             } catch (SQLException e) {
                 System.err.println("Unable to delete order " + name);
@@ -184,8 +185,32 @@ public class CommandUserInterface {
     }
 
     private static void addOrder() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addOrder'");
+        String name = Input.getString("Enter the name for the new individual order: ");
+        try {
+            if (db.orderExists(name)) {
+                BooleanSelect overwritePrompt = new BooleanSelect("Order \"" + name + "\" already exists. Overwrite the existing order?");
+                boolean doOverwrite = overwritePrompt.prompt();
+                if (doOverwrite) {
+                    editOrderPrice(name, "" + db.getOrderPrice(name));
+                    return;
+                }
+                System.out.println("The order \"" + name + "\" will not be changed.");
+                return;
+            }
+        } catch (SQLException e) {
+            System.err.println("Unable to check existence of order \"" + name + "\"");
+            e.printStackTrace();
+            return;
+        }
+        double price = Input.getDouble("Enter the price for order \"" + name + "\": ");
+        try {
+            db.addOrder(name, price);
+            System.out.println(String.format("Order \"%s\" : $%,.2f added.", name, price));
+        } catch (SQLException e) {
+            System.err.println("Unable to add order \"" + name + "\" with price " + String.format("%,.2f", price));
+            e.printStackTrace();
+            return;
+        }
     }
 
     private static void peopleMenu() {
@@ -237,25 +262,25 @@ public class CommandUserInterface {
     public static void main(String[] args) {
         CoffeeLedger db = CoffeeLedger.getInstance();
         try {
-            db.clear();
+            // db.clear();
 
-            db.addPerson("John");
-            db.addPerson("Mike");
-            db.addPerson("Chris");
+            // db.addPerson("John");
+            // db.addPerson("Mike");
+            // db.addPerson("Chris");
 
-            // db.printPeople();
-            db.addOrder("Large iced coffee", 4.00);
-            db.addOrder("Small hot coffee", 2.25);
-            // db.printOrders();
+            // // db.printPeople();
+            // db.addOrder("Large iced coffee", 4.00);
+            // db.addOrder("Small hot coffee", 2.25);
+            // // db.printOrders();
 
-            Map<String, String> groupOrder = new HashMap<String, String>();
-            groupOrder.put("John", "Large iced coffee");
-            groupOrder.put("Chris", "Small hot coffee");
-            groupOrder.put("Mike", "Large iced coffee");
-            db.addGroupOrder("Order 1", groupOrder);
-            // db.printGroupOrders();
-            // System.out.println("details:");
-            // db.printGroupOrderDetails();
+            // Map<String, String> groupOrder = new HashMap<String, String>();
+            // groupOrder.put("John", "Large iced coffee");
+            // groupOrder.put("Chris", "Small hot coffee");
+            // groupOrder.put("Mike", "Large iced coffee");
+            // db.addGroupOrder("Order 1", groupOrder);
+            // // db.printGroupOrders();
+            // // System.out.println("details:");
+            // // db.printGroupOrderDetails();
 
             // Map<String, Double> orderPrices = db.getGroupOrder("Order 1");
             // for (String person : orderPrices.keySet()) {
