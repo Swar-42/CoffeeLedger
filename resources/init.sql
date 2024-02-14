@@ -24,4 +24,11 @@ CREATE TABLE group_order_details (
     FOREIGN KEY(group_order_id) REFERENCES group_orders(id),
     FOREIGN KEY(person_id) REFERENCES people(id),
     FOREIGN KEY(order_id) REFERENCES orders(id)
-)
+);
+
+CREATE TABLE stored_vars (
+    person_to_pay INTEGER REFERENCES people(id) ON DELETE SET NULL
+);
+
+INSERT INTO stored_vars (person_to_pay) VALUES
+    (NULL);

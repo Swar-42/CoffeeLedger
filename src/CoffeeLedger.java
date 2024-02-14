@@ -129,7 +129,9 @@ public class CoffeeLedger {
         String sql = 
           "SELECT name FROM people "
         + "WHERE (bought - paid) = "
-        + "  (SELECT MAX(bought - paid) FROM people);";
+        + "  (SELECT MAX(bought - paid) FROM people)"
+        + "ORDER BY RAND()"
+        + "LIMIT 1;";
         ResultSet rs = stmt.executeQuery(sql);
         rs.next();
         String out = rs.getString(1);
@@ -282,6 +284,28 @@ public class CoffeeLedger {
         }
         rs.close();
         stmt.close();
+    }
+
+    public void setToPay(String name) throws SQLException {
+        int personId = getId(name, "people");
+        Statement stmt = conn.createStatement();
+        String sql = "UPDATE stored_vars SET person_to_pay = " + personId + ";";
+        stmt.execute(sql);
+        stmt.close();   
+    }
+
+    public String getToPay() throws SQLException {
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "SELECT p.name FROM stored_vars AS sv "
+        + "  JOIN people AS p ON sv.person_to_pay = p.id";
+        ResultSet rs = stmt.executeQuery(sql);
+        rs.next();
+        String out = rs.getString(1);
+        
+        rs.close();
+        stmt.close();
+        return out;
     }
 
     /**

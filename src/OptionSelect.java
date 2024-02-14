@@ -3,18 +3,19 @@ import java.util.List;
 import java.util.Scanner;
 
 public class OptionSelect {
+    private Scanner scanner;
     private String title;
     private List<String> options;
     private String exitString;
 
-    public OptionSelect(String title, List<String> options, String exitString) {
+    public OptionSelect(Scanner scanner, String title, List<String> options, String exitString) {
+        this.scanner = scanner;
         this.title = title;
         this.options = options;
         this.exitString = exitString;
     }
 
     public int prompt() {
-        Scanner scanner = new Scanner(System.in);
         while (true) {
             System.out.println(title);
             for (int i = 0; i < options.size(); i++) {
@@ -29,11 +30,11 @@ public class OptionSelect {
             try {
                 int selection = Integer.parseInt(input);
                 if (selection <= options.size()) {
-                    scanner.close();
                     return selection;
                 }
             } catch (NumberFormatException e) { }
             System.out.println("invalid input.");
+            System.out.println();
         }
     }
 
@@ -42,7 +43,7 @@ public class OptionSelect {
         options.add("option 1");
         options.add("option 2");
         options.add("this is the third one");
-        OptionSelect test = new OptionSelect("choose an option.", options, "exit the program");
+        OptionSelect test = new OptionSelect(new Scanner(System.in), "choose an option.", options, "exit the program");
         test.prompt();
     }
 }
