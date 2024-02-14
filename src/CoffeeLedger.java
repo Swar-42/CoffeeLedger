@@ -6,8 +6,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -219,7 +221,7 @@ public class CoffeeLedger {
         String query = "SELECT * FROM orders";
         ResultSet rs = stmt.executeQuery(query);
         while (rs.next()) {
-            System.out.println(rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3));
+            System.out.println(String.format("%s) %-30s : $%,.2f", rs.getString(1), rs.getString(2), rs.getDouble(3)));
         }
         rs.close();
         stmt.close();
@@ -305,6 +307,40 @@ public class CoffeeLedger {
         
         rs.close();
         stmt.close();
+        return out;
+    }
+
+    public List<String> getOrderNames() throws SQLException {
+        return getColumn("name", "orders");
+    }
+
+    public List<String> getOrderPrices() throws SQLException {
+        return getColumn("price", "orders");
+    }
+
+    public List<String> getPeopleNames() throws SQLException {
+        return getColumn("name", "people");
+    }
+
+    public List<String> getPeopleBoughtAmts() throws SQLException {
+        return getColumn("bought", "people");
+    }
+
+    public List<String> getPeoplePaidAmts() throws SQLException {
+        return getColumn("paid", "people");
+    }
+
+    private List<String> getColumn(String colName, String tableName) throws SQLException {
+        Statement stmt = conn.createStatement();
+        String sql = "SELECT " + colName + " FROM " + tableName + ";";
+        ResultSet rs = stmt.executeQuery(sql);
+        List<String> out = new ArrayList<String>();
+        while (rs.next()) {
+            out.add(rs.getString(1));
+        }
+
+        stmt.close();
+        rs.close();
         return out;
     }
 
