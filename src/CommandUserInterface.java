@@ -9,7 +9,6 @@ import java.util.Scanner;
 public class CommandUserInterface {
 
     private static CoffeeLedger db = CoffeeLedger.getInstance();
-    private static Scanner scanner = new Scanner(System.in);
 
     public static void mainMenu() {
         List<String> options = new ArrayList<String>();
@@ -18,7 +17,7 @@ public class CommandUserInterface {
         options.add("Add/Edit " + CoffeeTopic.PERSON.plural());
         options.add("Add/Edit " + CoffeeTopic.ORDER.plural());
         options.add("Add/Edit " + CoffeeTopic.GROUP_ORDER.plural());
-        OptionSelect menu = new OptionSelect(scanner, "Welcome to CoffeeLedger! Select an option below:", options, "Exit");
+        OptionSelect menu = new OptionSelect("Welcome to CoffeeLedger! Select an option below:", options, "Exit");
         int selection = menu.prompt();
 
         switch (selection) {
@@ -96,7 +95,7 @@ public class CommandUserInterface {
         for (int i = 0; i < orderNames.size(); i++) {
             allOrders.add(String.format("%-30s : $%s", orderNames.get(i), orderPrices.get(i)));
         }
-        OptionSelect orderSelect = new OptionSelect(scanner, "Select an item from the above to edit.", allOrders, "Back");
+        OptionSelect orderSelect = new OptionSelect("Select an item from the above to edit.", allOrders, "Back");
         orderSelect.displayTitleAbove(false);
         int choice = orderSelect.prompt();
 
@@ -111,7 +110,7 @@ public class CommandUserInterface {
         List<String> editSelection = new ArrayList<String>();
         editSelection.add("Edit name");
         editSelection.add("Edit price");
-        OptionSelect editSelect = new OptionSelect(scanner, String.format("Selected: %-30s : $%s", name, price), editSelection, "Back");
+        OptionSelect editSelect = new OptionSelect(String.format("Selected: %-30s : $%s", name, price), editSelection, "Back");
         int choice = editSelect.prompt();
 
         switch (choice) {
@@ -150,7 +149,7 @@ public class CommandUserInterface {
         }
         
         System.out.println(String.format("%s should pay next! (Owes: $%,.2f)", personToPay, debt));
-        BooleanSelect savePrompt = new BooleanSelect(scanner, "Will " + personToPay + " pay for the next order? (save this information?)");
+        BooleanSelect savePrompt = new BooleanSelect("Will " + personToPay + " pay for the next order? (save this information?)");
         Boolean savePerson = savePrompt.prompt();
         if (savePerson) {
             try {
@@ -168,7 +167,7 @@ public class CommandUserInterface {
         List<String> options = new ArrayList<String>();
         options.add("Add new " + topic);
         options.add("Edit/View existing " + topic.plural());
-        OptionSelect optionSelect = new OptionSelect(scanner, "What would you like to do?", options, "Back");
+        OptionSelect optionSelect = new OptionSelect("What would you like to do?", options, "Back");
         return optionSelect.prompt();
     }
 

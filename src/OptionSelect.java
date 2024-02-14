@@ -1,25 +1,21 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class OptionSelect {
-    private Scanner scanner;
     private String title;
     private List<String> options;
     private String exitString;
     private int numOptions;
     private boolean titleAbove = true;
 
-    public OptionSelect(Scanner scanner, String title, List<String> options, String exitString) {
-        this.scanner = scanner;
+    public OptionSelect(String title, List<String> options, String exitString) {
         this.title = title;
         this.options = options;
         this.exitString = exitString;
         this.numOptions = options.size();
     }
 
-    public OptionSelect(Scanner scanner, String title, int numOptions, String exitString) {
-        this.scanner = scanner;
+    public OptionSelect(String title, int numOptions, String exitString) {
         this.title = title;
         this.options = new ArrayList<String>();
         this.exitString = exitString;
@@ -35,15 +31,11 @@ public class OptionSelect {
             System.out.println("0) " + exitString);
             if (!titleAbove) System.out.println(title);
             System.out.println("Enter a number between 1 and " + numOptions + ", or 0 to quit.");
-            System.out.print("Selection: ");
 
-            String input = scanner.nextLine();
-            try {
-                int selection = Integer.parseInt(input);
-                if (selection <= numOptions) {
-                    return selection;
-                }
-            } catch (NumberFormatException e) { }
+            int input = Input.getInteger("Selection: ");
+            if (input <= numOptions) {
+                return input;
+            }
             System.out.println("invalid input.");
             System.out.println();
         }
@@ -58,7 +50,7 @@ public class OptionSelect {
         options.add("option 1");
         options.add("option 2");
         options.add("this is the third one");
-        OptionSelect test = new OptionSelect(new Scanner(System.in), "choose an option.", options, "exit the program");
+        OptionSelect test = new OptionSelect("choose an option.", options, "exit the program");
         test.prompt();
     }
 }

@@ -1,23 +1,18 @@
-import java.util.Scanner;
-
 public class BooleanSelect {
-    private Scanner scanner;
     private String text;
 
     private static final String REGEX_YES = "(?i)^Y|YES";
     private static final String REGEX_NO =  "(?i)^N|NO";
 
-    public BooleanSelect(Scanner scanner, String text) {
-        this.scanner = scanner;
+    public BooleanSelect(String text) {
         this.text = text;
     }
 
     public Boolean prompt() {
         while (true) {
             System.out.println(text);
-            System.out.print("Enter Y/N (yes/no): ");
 
-            String input = scanner.nextLine();
+            String input = Input.getString("Enter Y/N (yes/no): ");
 
             if (input.matches(REGEX_YES)) {
                 return true;
@@ -30,7 +25,7 @@ public class BooleanSelect {
     }
 
     public static void main(String[] args) {
-        BooleanSelect select = new BooleanSelect(new Scanner(System.in), "is water wet?");
+        BooleanSelect select = new BooleanSelect("is water wet?");
         System.out.println(select.prompt());
     }
 }
