@@ -1,5 +1,4 @@
 package packages.topics;
-import java.util.List;
 
 public class PersonList extends TopicList {
 

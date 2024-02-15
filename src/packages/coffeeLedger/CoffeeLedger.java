@@ -15,15 +15,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.sql.rowset.serial.SQLOutputImpl;
-
 import org.h2.tools.RunScript;
 
 import packages.topics.GroupOrderItem;
 import packages.topics.OrderItem;
 import packages.topics.PersonItem;
 import packages.topics.TopicItem;
-import packages.topics.TopicType;
 
 
 public class CoffeeLedger {
