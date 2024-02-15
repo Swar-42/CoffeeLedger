@@ -1,8 +1,8 @@
-package packages.topics;
+package topics;
 
 import java.sql.SQLException;
 
-import packages.input.Input;
+import input.Input;
 
 public class OrderMenu extends TopicMenu {
 

@@ -1,4 +1,4 @@
-package packages.topics;
+package topics;
 public abstract class Topic {
     protected TopicType type;
 

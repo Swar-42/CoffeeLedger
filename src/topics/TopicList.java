@@ -1,10 +1,10 @@
-package packages.topics;
+package topics;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import packages.coffeeLedger.CoffeeLedger;
-import packages.input.OptionSelect;
+import coffeeLedger.CoffeeLedger;
+import input.OptionSelect;
 
 public abstract class TopicList extends Topic {
     protected List<TopicItem> list;

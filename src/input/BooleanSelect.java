@@ -1,4 +1,4 @@
-package packages.input;
+package input;
 public class BooleanSelect {
     private String text;
 

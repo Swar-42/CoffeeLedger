@@ -1,12 +1,12 @@
-package packages.topics;
+package topics;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import packages.coffeeLedger.CoffeeLedger;
-import packages.input.BooleanSelect;
-import packages.input.Input;
-import packages.input.OptionSelect;
+import coffeeLedger.CoffeeLedger;
+import input.BooleanSelect;
+import input.Input;
+import input.OptionSelect;
 
 public abstract class TopicItem extends Topic {
     protected static List<String> colNames;

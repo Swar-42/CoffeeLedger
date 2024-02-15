@@ -1,4 +1,4 @@
-package packages.coffeeLedger;
+package coffeeLedger;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,10 +17,10 @@ import java.util.Set;
 
 import org.h2.tools.RunScript;
 
-import packages.topics.GroupOrderItem;
-import packages.topics.OrderItem;
-import packages.topics.PersonItem;
-import packages.topics.TopicItem;
+import topics.GroupOrderItem;
+import topics.OrderItem;
+import topics.PersonItem;
+import topics.TopicItem;
 
 
 public class CoffeeLedger {

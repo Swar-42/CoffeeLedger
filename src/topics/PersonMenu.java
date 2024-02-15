@@ -1,4 +1,4 @@
-package packages.topics;
+package topics;
 
 import java.sql.SQLException;
 

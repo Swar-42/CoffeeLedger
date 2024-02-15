@@ -1,4 +1,4 @@
-package packages.topics;
+package topics;
 
 public class OrderList extends TopicList {
 

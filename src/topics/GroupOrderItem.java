@@ -1,8 +1,8 @@
-package packages.topics;
+package topics;
 import java.util.ArrayList;
 import java.util.List;
 
-import packages.input.OptionSelect;
+import input.OptionSelect;
 
 public class GroupOrderItem extends TopicItem {
     

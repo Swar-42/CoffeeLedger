@@ -1,10 +1,10 @@
-package packages.topics;
+package topics;
 
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import packages.input.BooleanSelect;
+import input.BooleanSelect;
 
 public class GroupOrderMenu extends TopicMenu {
 

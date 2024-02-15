@@ -1,4 +1,4 @@
-package packages.topics;
+package topics;
 public enum TopicType {
     PERSON ("person"), ORDER ("individual order"), GROUP_ORDER ("group order");
 

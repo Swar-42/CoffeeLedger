@@ -1,8 +1,8 @@
-package packages.topics;
+package topics;
 import java.util.ArrayList;
 import java.util.List;
 
-import packages.input.Input;
+import input.Input;
 
 public class OrderItem extends TopicItem {
 
