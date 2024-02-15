@@ -1,3 +1,4 @@
+package packages.coffeeLedger;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -7,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,8 +17,18 @@ import java.util.Set;
 
 import org.h2.tools.RunScript;
 
+import packages.topics.GroupOrderItem;
+import packages.topics.OrderItem;
+import packages.topics.PersonItem;
+import packages.topics.TopicItem;
+import packages.topics.TopicType;
+
 
 public class CoffeeLedger {
+    public static final String[] COLUMN_LABELS = new String[]{"name", "bought", "paid", "price"};
+    public static final Set<String> accessibleColumns = new HashSet<String>(Arrays.asList(COLUMN_LABELS));
+    public static final String[] TABLE_NAMES = new String[]{"people", "orders", "group_orders"};
+    public static final Set<String> accessibleTables = new HashSet<String>(Arrays.asList(TABLE_NAMES));
 
     private Connection conn;
     private static CoffeeLedger instance = null;
@@ -157,6 +169,101 @@ public class CoffeeLedger {
         return out;
     }
 
+    public List<String> getColumn(String colName, String tableName) throws SQLException {
+        if (!validTable(tableName) || !validColumn(colName)) {
+            throw new IllegalArgumentException("Invalid table name (" + tableName + ") or column name (" + colName + ")");
+        }
+
+        Statement stmt = conn.createStatement();
+        String sql = "SELECT " + colName + " FROM " + tableName + ";";
+        ResultSet rs = stmt.executeQuery(sql);
+        List<String> out = new ArrayList<String>();
+        while (rs.next()) {
+            out.add(rs.getString(1));
+        }
+
+        stmt.close();
+        rs.close();
+        return out;
+    }
+
+    public String getValue(String rowName, String colName, String tableName) throws SQLException {
+        if (!validTable(tableName) || !validColumn(colName)) {
+            throw new IllegalArgumentException("Invalid table name (" + tableName + ") or column name (" + colName + ")");
+        }
+
+        int id = getId(rowName, tableName);
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "SELECT " + colName + " FROM " + tableName + " "
+        + "WHERE id = " + id + ";";
+        ResultSet rs = stmt.executeQuery(sql);
+        rs.next();
+        String out = rs.getString(1);
+
+        rs.close();
+        stmt.close();
+        return out;
+    }
+
+    public void changeValue(String rowName, String colName, String tableName, String newValue) throws SQLException {
+        if (!validTable(tableName) || !validColumn(colName)) {
+            throw new IllegalArgumentException("Invalid table name (" + tableName + ") or column name (" + colName + ")");
+        }
+        
+        int id = getId(rowName, tableName);
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "UPDATE "+ tableName + " SET "
+        +  colName + " = " + newValue + " "
+        + "WHERE id = " + id + ";";
+        stmt.execute(sql);
+
+        stmt.close();
+    }
+
+    public void removeRow(String rowName, String tableName) throws SQLException {
+        if (!validTable(tableName)) {
+            throw new IllegalArgumentException("Invalid table name (" + tableName + ")");
+        }
+
+        int id = getId(rowName, tableName);
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "DELETE FROM " + tableName + " "
+        + "WHERE id = " + id + ";";
+        stmt.execute(sql);
+
+        stmt.close();
+    }
+
+    /**
+     * checks if the provided data is in the given table
+     * @param dataName name of data to check existence of
+     * @param tableName table to check
+     * @return True if data is in table, false otherwise
+     * @throws SQLException
+     */
+    public boolean dataExists(String colName, String tableName, String dataName) throws SQLException {
+        if (!validTable(tableName) || !validColumn(colName)) {
+            throw new IllegalArgumentException("Invalid table name (" + tableName + ") or column name (" + colName + ").");
+        }
+
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "SELECT " + dataName + " IN "
+        + "  (SELECT " + colName + " FROM " + tableName + ");"; 
+        ResultSet rs = stmt.executeQuery(sql);
+        rs.next();
+        String s = rs.getString(1);
+
+        stmt.close();
+        rs.close();
+
+
+        return (s.equals("TRUE"));
+    }
+
     /**
      * adds row to the 'people' table
      * @param name - name of the person to add
@@ -164,7 +271,7 @@ public class CoffeeLedger {
      * @throws SQLException 
      */
     public void addPerson(String name) throws SQLException {
-        if (dataExists(name, "people")) {
+        if (dataExists("name", "people", "\'" + name + "\'")) {
             throw new IllegalArgumentException(name + " already exists in table people");
         }
 
@@ -199,7 +306,7 @@ public class CoffeeLedger {
      * @throws SQLException
      */
     public void addOrder(String name, double price) throws SQLException {
-        if (dataExists(name, "orders")) {
+        if (dataExists("name", "orders", "\'" + name + "\'")) {
             throw new IllegalArgumentException(name + " already exists in table orders");
         }
         
@@ -234,7 +341,7 @@ public class CoffeeLedger {
      * @throws SQLException
      */
     public void addGroupOrder(String name, Map<String, String> personOrderMap) throws SQLException{
-        if (dataExists(name, "group_orders")) {
+        if (dataExists("name", "group_orders", "\'" + name + "\'")) {
             throw new IllegalArgumentException(name + " already exists in table group_orders");
         }
         // add to group_orders
@@ -309,53 +416,63 @@ public class CoffeeLedger {
         stmt.close();
         return out;
     }
-
-    public String getOrderPrice(String orderName) throws SQLException {
-        return getValue(orderName,  "price", "orders");
+    public List<TopicItem> getTable(String tableName) throws SQLException {
+        if (tableName.equals("people")) {
+            return getPeopleTable();
+        } else if (tableName.equals("orders")) {
+            return getOrdersTable();
+        } else if (tableName.equals("group_orders")) {
+            return getGroupOrdersTable();
+        }
+        throw new IllegalArgumentException("invalid table name: " + tableName);
     }
 
-    public void changeOrderName(String currName, String newName) throws SQLException {
-        changeValue(currName, "name", "\'" + newName + "\'", "orders");
+    public List<TopicItem> getOrdersTable() throws SQLException {
+        List<TopicItem> out = new ArrayList<TopicItem>();
+
+        Statement stmt = conn.createStatement();
+        String sql = "SELECT name, price FROM orders;";
+        ResultSet rs = stmt.executeQuery(sql);
+        while (rs.next()) {
+            List<String> row = new ArrayList<String>();
+            row.add(rs.getString(1));
+            row.add(rs.getString(2));
+            out.add(new OrderItem(row));
+        }
+
+        rs.close();
+        stmt.close();
+        return out;
     }
 
-    public void changeOrderPrice(String name, double newPrice) throws SQLException {
-        changeValue(name, "price", String.format("%,.2f", newPrice), "orders");
+    public List<TopicItem> getPeopleTable() throws SQLException {
+        List<TopicItem> out = new ArrayList<TopicItem>();
+
+        Statement stmt = conn.createStatement();
+        String sql = "SELECT name, bought, paid FROM orders;";
+        ResultSet rs = stmt.executeQuery(sql);
+        while (rs.next()) {
+            List<String> row = new ArrayList<String>();
+            row.add(rs.getString(1));
+            row.add(rs.getString(2));
+            row.add(rs.getString(3));
+            out.add(new PersonItem(row));
+        }
+
+        rs.close();
+        stmt.close();
+        return out;
     }
 
-    public List<String> getOrderNames() throws SQLException {
-        return getColumn("name", "orders");
-    }
+    public List<TopicItem> getGroupOrdersTable() throws SQLException {
+        List<TopicItem> out = new ArrayList<TopicItem>();
+        for (String name : getColumn("name", "group_orders")) {
+            List<String> row = new ArrayList<String>();
+            row.add(name);
+            out.add(new GroupOrderItem(row));
+        }
 
-    public List<String> getOrderPrices() throws SQLException {
-        return getColumn("price", "orders");
-    }
-
-    public List<String> getPeopleNames() throws SQLException {
-        return getColumn("name", "people");
-    }
-
-    public List<String> getPeopleBoughtAmts() throws SQLException {
-        return getColumn("bought", "people");
-    }
-
-    public List<String> getPeoplePaidAmts() throws SQLException {
-        return getColumn("paid", "people");
-    }
-
-    public void removeOrder(String name) throws SQLException {
-        removeRow(name, "orders");
-    }
-
-    public boolean orderExists(String name) throws SQLException {
-        return dataExists(name, "orders");
-    }
-
-    public boolean personExists(String name) throws SQLException {
-        return dataExists(name, "people");
-    }
-
-    public boolean groupOrderExists(String name) throws SQLException {
-        return dataExists(name, "group_orders");
+        return out;
     }
 
     /**
@@ -373,79 +490,12 @@ public class CoffeeLedger {
         stmt.close();
     }
 
-    private List<String> getColumn(String colName, String tableName) throws SQLException {
-        Statement stmt = conn.createStatement();
-        String sql = "SELECT " + colName + " FROM " + tableName + ";";
-        ResultSet rs = stmt.executeQuery(sql);
-        List<String> out = new ArrayList<String>();
-        while (rs.next()) {
-            out.add(rs.getString(1));
-        }
-
-        stmt.close();
-        rs.close();
-        return out;
+    private boolean validTable(String tableName) {
+        return accessibleTables.contains(tableName);
     }
 
-    private String getValue(String rowName, String colName, String tableName) throws SQLException {
-        int id = getId(rowName, tableName);
-        Statement stmt = conn.createStatement();
-        String sql = 
-          "SELECT " + colName + " FROM " + tableName + " "
-        + "WHERE id = " + id + ";";
-        ResultSet rs = stmt.executeQuery(sql);
-        rs.next();
-        String out = rs.getString(1);
-
-        rs.close();
-        stmt.close();
-        return out;
-    }
-
-    private void changeValue(String rowName, String colName, String newValue, String tableName) throws SQLException {
-        int id = getId(rowName, tableName);
-        Statement stmt = conn.createStatement();
-        String sql = 
-          "UPDATE "+ tableName + " SET "
-        +  colName + " = " + newValue + " "
-        + "WHERE id = " + id + ";";
-        stmt.execute(sql);
-
-        stmt.close();
-    }
-
-    private void removeRow(String rowName, String tableName) throws SQLException {
-        int id = getId(rowName, tableName);
-        Statement stmt = conn.createStatement();
-        String sql = 
-          "DELETE FROM " + tableName + " "
-        + "WHERE id = " + id + ";";
-        stmt.execute(sql);
-
-        stmt.close();
-    }
-
-    /**
-     * checks if the provided data is in the given table
-     * @param dataName name of data to check existence of
-     * @param tableName table to check
-     * @return True if data is in table, false otherwise
-     * @throws SQLException
-     */
-    private boolean dataExists(String dataName, String tableName) throws SQLException {
-        Statement stmt = conn.createStatement();
-        String sql = 
-          "SELECT \'" + dataName + "\' IN "
-        + "  (SELECT name FROM " + tableName + ");"; 
-        ResultSet rs = stmt.executeQuery(sql);
-        rs.next();
-        String s = rs.getString(1);
-
-        stmt.close();
-        rs.close();
-
-
-        return (s.equals("TRUE"));
+    private boolean validColumn(String colName) {
+        return accessibleColumns.contains(colName);
     }
 
     /**
@@ -456,7 +506,7 @@ public class CoffeeLedger {
      * @throws SQLException
      */
     private int getId(String name, String tableName) throws SQLException {
-        if (!dataExists(name, tableName)) {
+        if (!dataExists("name", tableName, "\'" + name + "\'")) {
             throw new IllegalArgumentException(name + " not found in table " + tableName);
         }
 

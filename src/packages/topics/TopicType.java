@@ -1,9 +1,10 @@
-public enum CoffeeTopic {
+package packages.topics;
+public enum TopicType {
     PERSON ("person"), ORDER ("individual order"), GROUP_ORDER ("group order");
 
     private final String name;
 
-    private CoffeeTopic(String name) {
+    private TopicType(String name) {
         this.name = name;
     }
 
@@ -22,5 +23,17 @@ public enum CoffeeTopic {
             default:
                 return this.toString();
         }
+    }
+
+    public String tableName() {
+        switch (this) {
+            case PERSON:
+                return "people";
+            case ORDER:
+                return "orders";
+            case GROUP_ORDER:
+                return "group_orders";
+        }
+        throw new IllegalStateException("Invalid topic type " + name);
     }
 }
