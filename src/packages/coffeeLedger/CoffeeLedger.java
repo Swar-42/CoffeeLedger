@@ -135,6 +135,23 @@ public class CoffeeLedger {
         stmt.close();
     }
 
+    public void updateBought(String groupOrderName) throws SQLException {
+        int id = getId(groupOrderName, "group_orders");
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "UPDATE people p_out SET "
+        + "p_out.bought = "
+        + "  (SELECT (p.bought + o.price) "
+        + "  FROM people AS p "
+        + "    JOIN group_order_details AS gd ON p.id = gd.person_id "
+        + "    JOIN group_orders AS g ON g.id = gd.group_order_id "
+        + "    JOIN orders AS o ON o.id = gd.order_id "
+        + "  WHERE g.id = " + id + " AND p_out.id = p.id);";
+        stmt.execute(sql);
+
+        stmt.close();
+    }
+
     /**
      * calculates the person (from the people table) with the most debt (bought - paid)
      * @return
@@ -158,10 +175,11 @@ public class CoffeeLedger {
     }
 
     public double getDebt(String name) throws SQLException {
+        int id = getId(name, "people");
         Statement stmt = conn.createStatement();
         String sql = 
           "SELECT (bought - paid) FROM people "
-        + "WHERE name = \'" + name + "\';";
+        + "WHERE id = " + id + ";";
         ResultSet rs = stmt.executeQuery(sql);
         rs.next();
         double out = rs.getDouble(1);
@@ -175,9 +193,9 @@ public class CoffeeLedger {
         int id = getId(groupOrderName, "group_orders");
         Statement stmt = conn.createStatement();
         String sql = 
-          "SELECT SUM(o.price) FROM orders AS o"
-        + "  JOIN group_order_details AS gd ON o.id = gd.order_id"
-        + "  JOIN group_orders AS g ON g.id = gd.group_order_id"
+          "SELECT SUM(o.price) FROM orders AS o "
+        + "  JOIN group_order_details AS gd ON o.id = gd.order_id "
+        + "  JOIN group_orders AS g ON g.id = gd.group_order_id "
         + "WHERE g.id = " + id + ";";
         ResultSet rs = stmt.executeQuery(sql);
         rs.next();
@@ -425,15 +443,12 @@ public class CoffeeLedger {
     public String getToPay() throws SQLException {
         Statement stmt = conn.createStatement();
         String sql = 
-          "SELECT p.name FROM stored_vars AS sv "
-        + "  JOIN people AS p ON sv.person_to_pay = p.id";
+          "SELECT p.name "
+        + "FROM people AS p "
+        + "JOIN stored_vars AS sv ON sv.person_to_pay = p.id;";
         ResultSet rs = stmt.executeQuery(sql);
         rs.next();
         String out = rs.getString(1);
-        
-        if (out.equals("null")) {
-            out = null;
-        }
         
         rs.close();
         stmt.close();

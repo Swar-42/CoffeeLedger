@@ -67,33 +67,52 @@ public class CommandUserInterface {
             personToPay = confirmToPay(potentialPayer);
         }
         BooleanSelect savedSelect = new BooleanSelect("Use a saved group order? ");
-        boolean makeNewGroupOrder = savedSelect.prompt();
-        TopicItem groupOrder;
-        if (makeNewGroupOrder) {
-            TopicMenu groupOrderMenu = new GroupOrderMenu();
-            groupOrder = groupOrderMenu.addItemMenu();
-        } else {
+        boolean useSavedOrder = savedSelect.prompt();
+        TopicItem groupOrder = null;
+        if (useSavedOrder) {
             TopicList groupOrderList = new GroupOrderList();
             groupOrder = groupOrderList.getSelection("Select an above group order to process.");
         }
-        System.out.println("Processing group order " + groupOrder.getName() + ".");
-        double cost;
-        try {
-            cost = db.getCost(groupOrder.getName());
-        } catch (SQLException e) {
-            System.err.println("Unable to calculate group order " + groupOrder.getName() + " cost");
-            e.printStackTrace();
-            return;
+        if (!useSavedOrder || groupOrder == null) {
+            TopicMenu groupOrderMenu = new GroupOrderMenu();
+            groupOrder = groupOrderMenu.addItemMenu();
         }
-        System.out.println(String.format("Group order %s costs %,.2f.", groupOrder.getName(), cost));
+        System.out.println("Processing group order \"" + groupOrder.getName() + "\".");
+        updateBought(groupOrder.getName());
+        double cost = calcCost(groupOrder.getName());
+        System.out.println(String.format("Group order %s costs $%,.2f.", groupOrder.getName(), cost));
         if (personToPay == null) {
             potentialPayer = toPayPrompt();
             personToPay = confirmToPay(potentialPayer);
             if (personToPay == null) {
-                // provide person select
+                TopicList personSelect = new PersonList();
+                TopicItem selectedPerson = personSelect.getSelection("Select who will pay from the above.");
+                personToPay = selectedPerson.getName();
             }
         }
-        // charge person
+        System.out.println(String.format("%s will be charged $%,.2f for the group order.", personToPay, cost));
+        chargePerson(personToPay, cost);
+    }
+
+    private static void updateBought(String groupOrderName) {
+        try {
+            db.updateBought(groupOrderName);
+            db.setToPay(db.mostDebt());
+            System.out.println("Paid amounts for group order \"" + groupOrderName + "\" updated.");
+        } catch (SQLException e) {
+            System.err.println("Unable to update paid amounts for group order \"" + groupOrderName + "\"");
+            e.printStackTrace();
+        }
+    }
+
+    private static void chargePerson(String name, double cost) {
+        try {
+            db.addPaid(name, cost);
+            System.out.println(String.format("%s has been charged $%,.2f", name, cost));
+        } catch (SQLException e) {
+            System.err.println("Unable to charge " + name + " $" + cost );
+            e.printStackTrace();
+        }
     }
 
     private static void toPayMenu() {
@@ -112,7 +131,7 @@ public class CommandUserInterface {
     }
 
     private static String confirmToPay(String potentialPayer) {
-        BooleanSelect payPrompt = new BooleanSelect(String.format("Will %s pay for the next order? (Debt: %,.2f)", potentialPayer, getDebt(potentialPayer)));
+        BooleanSelect payPrompt = new BooleanSelect(String.format("Will %s pay for the next order? (Debt: $%,.2f)", potentialPayer, getDebt(potentialPayer)));
         boolean chargePerson = payPrompt.prompt();
         if (chargePerson) {
             return potentialPayer;
@@ -156,6 +175,16 @@ public class CommandUserInterface {
             return db.getDebt(name);
         } catch (SQLException e) {
             System.err.println("SQL error: unable to calculate debt");
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    private static double calcCost(String groupOrderName) {
+        try {
+            return db.getCost(groupOrderName);
+        } catch (SQLException e) {
+            System.err.println("Unable to calculate group order " + groupOrderName + " cost");
             e.printStackTrace();
             return 0;
         }
