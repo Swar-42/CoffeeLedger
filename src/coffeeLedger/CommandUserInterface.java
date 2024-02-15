@@ -87,6 +87,7 @@ public class CommandUserInterface {
                 TopicList personSelect = new PersonList();
                 TopicItem selectedPerson = personSelect.getSelection("Select who will pay from the above.", true);
                 if (selectedPerson != null) {
+                    System.out.println();
                     personToPay = selectedPerson.getName();
                 }
             }
