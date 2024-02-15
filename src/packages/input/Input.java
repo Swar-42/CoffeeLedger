@@ -41,4 +41,17 @@ public class Input {
             System.out.println("Invalid input (enter a decimal value).");
         }
     }
+
+    public static double getPosDouble(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine();
+            double output;
+            try {
+                output = Double.parseDouble(input);
+                if (output >= 0) return output;
+            } catch (NumberFormatException e) { }
+            System.out.println("Invalid input (enter a positive decimal value).");
+        }
+    }
 }

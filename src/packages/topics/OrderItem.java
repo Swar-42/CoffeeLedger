@@ -22,7 +22,7 @@ public class OrderItem extends TopicItem {
                 return super.getValueInput(index, prompt);
             case 1: // price
                 List<String> out = new ArrayList<String>();
-                String input = String.format("%,.2f", Input.getDouble(prompt));
+                String input = String.format("%,.2f", Input.getPosDouble(prompt));
                 out.add(input);
                 out.add(input);
                 return out;

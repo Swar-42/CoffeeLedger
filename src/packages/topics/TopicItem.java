@@ -30,8 +30,10 @@ public abstract class TopicItem extends Topic {
         int choice = editSelect.prompt();
         
         if (choice > 0 && choice <= values.size()) {
+            System.out.println();
             editColumn(choice-1);
         } else if (choice == values.size() + 1) {
+            System.out.println();
             Boolean deleted = deleteItem();
             if (deleted) return;
         } else {
@@ -40,6 +42,10 @@ public abstract class TopicItem extends Topic {
 
         System.out.println();
         mainMenu();
+    }
+
+    public String getName() {
+        return values.get(0);
     }
 
     protected void editColumn(int index) {

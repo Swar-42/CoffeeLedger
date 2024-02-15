@@ -7,17 +7,24 @@ public class GroupOrderItem extends TopicItem {
         super(values);
     }
 
-
     @Override
     public String rowFormat() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'rowFormat'");
+        return values.get(0);
+    }
+
+    @Override public String toString() {
+        return values.get(0);
     }
 
     @Override
     protected void setColNames() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setColNames'");
+        colNames.add("name");
+    }
+
+
+    @Override
+    protected void setTopicType() {
+        type = TopicType.GROUP_ORDER;
     }
     
 }

@@ -17,7 +17,7 @@ public class PersonItem extends TopicItem {
             case 1: // bought, paid
             case 2:
                 List<String> out = new ArrayList<String>();
-                String input = String.format("%,.2f", Input.getDouble(prompt));
+                String input = String.format("%,.2f", Input.getPosDouble(prompt));
                 out.add(input);
                 out.add(input);
                 return out;

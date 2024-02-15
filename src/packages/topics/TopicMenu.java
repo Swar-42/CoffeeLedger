@@ -21,7 +21,7 @@ public abstract class TopicMenu extends Topic {
                 break;
             case 2:
                 System.out.println();
-                editListMenu();
+                listMenu();
                 System.out.println();
                 break;
             case 0:
@@ -40,6 +40,7 @@ public abstract class TopicMenu extends Topic {
                 boolean editExisting = overwritePrompt.prompt();
                 if (editExisting) {
                     TopicItem item = db.getItem(type.tableName(), name);
+                    System.out.println();
                     item.mainMenu();
                     return;
                 }
@@ -54,39 +55,33 @@ public abstract class TopicMenu extends Topic {
         addItem(name);
     }
 
-    public void editListMenu() {
-        List<TopicItem> itemList;
-        try {
-            itemList = db.getTable(type.tableName());
-        } catch (SQLException e) {
-            System.err.println("SQL Error: unable to get " + type.plural() + " information");
-            e.printStackTrace();
+    public void listMenu() {
+        TopicList topicList = makeTopicList();
+        TopicItem item = topicList.getSelection("Select an item from the above.");
+
+        if (item == null) {
             return;
         }
-        boolean doRepeat = listSetup(itemList);
-
-        if (doRepeat) editListMenu();
+        
+        item.mainMenu();
+        System.out.println();
+        listMenu();
     }
 
-    private boolean listSetup(List<TopicItem> itemList) {
-        TopicList topicList;
+    public TopicList makeTopicList() {
         switch (type) {
             case PERSON:
-                topicList = new PersonList(itemList);
-                break;
+                return new PersonList();
             case ORDER:
-                topicList = new OrderList(itemList);
-                break;
+                return new OrderList();
             case GROUP_ORDER:
-                topicList = new GroupOrderList(itemList);
-                break;
+                return new GroupOrderList();
             default:
                 throw new IllegalStateException("topic type " + type + " is invalid");
         }
-        return topicList.mainMenu();
     }
 
-    private static int baseChoice() {
+    private int baseChoice() {
         List<String> options = new ArrayList<String>();
         options.add("Add new " + type);
         options.add("Edit/View existing " + type.plural());

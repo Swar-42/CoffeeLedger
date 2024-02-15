@@ -341,7 +341,7 @@ public class CoffeeLedger {
      * @throws SQLException
      */
     public void addGroupOrder(String name, Map<String, String> personOrderMap) throws SQLException{
-        if (dataExists("name", "group_orders", "\'" + name + "\'")) {
+        if (dataExists("name", "group_orders",  "\'" + name + "\'")) {
             throw new IllegalArgumentException(name + " already exists in table group_orders");
         }
         // add to group_orders
