@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import packages.input.BooleanSelect;
-import packages.input.Input;
 
 public class GroupOrderMenu extends TopicMenu {
 
@@ -15,7 +14,7 @@ public class GroupOrderMenu extends TopicMenu {
     }
 
     @Override
-    protected void addItem(String name) {
+    protected TopicItem addItem(String name) {
         System.out.println();
         Map<String, String> orderMap = new HashMap<String, String>();
         BooleanSelect continuePrompt = new BooleanSelect("Add another person to the group order?");
@@ -34,16 +33,17 @@ public class GroupOrderMenu extends TopicMenu {
 
         if (orderMap.isEmpty()) {
             System.out.println("Group Order \"" + name + "\" cancelled.");
-            return;
+            return null;
         }
 
         try {
             db.addGroupOrder(name, orderMap);
             System.out.println(String.format("Group Order \"%s\" added.", name));
+            return db.getItem(type.tableName(), name);
         } catch (SQLException e) {
             System.err.println("Unable to add Group Order \"" + name + "\"");
             e.printStackTrace();
-            return;
+            return null;
         }
     }
     

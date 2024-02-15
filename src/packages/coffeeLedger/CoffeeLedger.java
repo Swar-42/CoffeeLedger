@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.rowset.serial.SQLOutputImpl;
+
 import org.h2.tools.RunScript;
 
 import packages.topics.GroupOrderItem;
@@ -167,6 +169,23 @@ public class CoffeeLedger {
         stmt.close();
         rs.close();
         return out;
+    }
+
+    public double getCost(String groupOrderName) throws SQLException {
+        int id = getId(groupOrderName, "group_orders");
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "SELECT SUM(o.price) FROM orders AS o"
+        + "  JOIN group_order_details AS gd ON o.id = gd.order_id"
+        + "  JOIN group_orders AS g ON g.id = gd.group_order_id"
+        + "WHERE g.id = " + id + ";";
+        ResultSet rs = stmt.executeQuery(sql);
+        rs.next();
+        double cost = rs.getDouble(1);
+
+        stmt.close();
+        rs.close();
+        return cost;
     }
 
     public List<String> getColumn(String colName, String tableName) throws SQLException {
@@ -411,6 +430,10 @@ public class CoffeeLedger {
         ResultSet rs = stmt.executeQuery(sql);
         rs.next();
         String out = rs.getString(1);
+        
+        if (out.equals("null")) {
+            out = null;
+        }
         
         rs.close();
         stmt.close();

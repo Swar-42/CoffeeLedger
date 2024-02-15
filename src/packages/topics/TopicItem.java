@@ -34,7 +34,7 @@ public abstract class TopicItem extends Topic {
             editColumn(choice-1);
         } else if (choice == values.size() + 1) {
             System.out.println();
-            Boolean deleted = deleteItem();
+            boolean deleted = deleteItem();
             if (deleted) return;
         } else {
             return;

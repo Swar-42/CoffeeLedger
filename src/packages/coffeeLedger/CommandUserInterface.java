@@ -26,7 +26,7 @@ public class CommandUserInterface {
         switch (selection) {
             case 1:
                 System.out.println();
-                promptNextPayer();
+                toPayMenu();
                 System.out.println();
                 break;
             case 2:
@@ -61,35 +61,103 @@ public class CommandUserInterface {
     }
 
     private static void processGroupOrder() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'processGroupOrder'");
-    }
-
-    private static void promptNextPayer() {
-        String personToPay;
-        double debt;
+        String potentialPayer = getToPay();
+        String personToPay = null;
+        if (potentialPayer != null) {
+            personToPay = confirmToPay(potentialPayer);
+        }
+        BooleanSelect savedSelect = new BooleanSelect("Use a saved group order? ");
+        boolean makeNewGroupOrder = savedSelect.prompt();
+        TopicItem groupOrder;
+        if (makeNewGroupOrder) {
+            TopicMenu groupOrderMenu = new GroupOrderMenu();
+            groupOrder = groupOrderMenu.addItemMenu();
+        } else {
+            TopicList groupOrderList = new GroupOrderList();
+            groupOrder = groupOrderList.getSelection("Select an above group order to process.");
+        }
+        System.out.println("Processing group order " + groupOrder.getName() + ".");
+        double cost;
         try {
-            personToPay = db.mostDebt();
-            debt = db.getDebt(personToPay);
+            cost = db.getCost(groupOrder.getName());
         } catch (SQLException e) {
-            System.err.println("SQL error: unable to calculate debt");
+            System.err.println("Unable to calculate group order " + groupOrder.getName() + " cost");
             e.printStackTrace();
             return;
         }
+        System.out.println(String.format("Group order %s costs %,.2f.", groupOrder.getName(), cost));
+        if (personToPay == null) {
+            potentialPayer = toPayPrompt();
+            personToPay = confirmToPay(potentialPayer);
+            if (personToPay == null) {
+                // provide person select
+            }
+        }
+        // charge person
+    }
+
+    private static void toPayMenu() {
+        String personToPay = toPayPrompt();
+        personToPay = confirmToPay(personToPay);
+        if (personToPay == null) return;
+        saveToPay(personToPay);
+    }
+
+    private static String toPayPrompt() {
+        String personToPay = mostDebt();
+        double debt = getDebt(personToPay);
         
         System.out.println(String.format("%s should pay next! (Owes: $%,.2f)", personToPay, debt));
-        BooleanSelect savePrompt = new BooleanSelect("Will " + personToPay + " pay for the next order? (save this information?)");
-        Boolean savePerson = savePrompt.prompt();
-        if (savePerson) {
-            try {
-                db.setToPay(personToPay);
-            } catch (SQLException e) {
-                System.err.println("SQL error: unable to set person_to_pay variable");
-                e.printStackTrace();
-                return;
-            }
-            System.out.println(personToPay + " saved as person to pay for the next order.");
-        } 
+        return personToPay;
+    }
+
+    private static String confirmToPay(String potentialPayer) {
+        BooleanSelect payPrompt = new BooleanSelect(String.format("Will %s pay for the next order? (Debt: %,.2f)", potentialPayer, getDebt(potentialPayer)));
+        boolean chargePerson = payPrompt.prompt();
+        if (chargePerson) {
+            return potentialPayer;
+        }
+}
+
+    private static void saveToPay(String name) {
+        try {
+            db.setToPay(personToPay);
+        } catch (SQLException e) {
+            System.err.println("SQL error: unable to set person_to_pay variable");
+            e.printStackTrace();
+            return;
+        }
+        System.out.println(personToPay + " saved as person to pay for the next order.");
+    }
+
+    private static String mostDebt() {
+        try {
+            return db.mostDebt();
+        } catch (SQLException e) {
+            System.err.println("Unable to calculate person with most debt.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static String getToPay() {
+        try {
+            return db.getToPay();
+        } catch (SQLException e) {
+            System.err.println("Unable to calculate person to pay.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static double getDebt(String name) {
+        try {
+            return db.getDebt(name);
+        } catch (SQLException e) {
+            System.err.println("SQL error: unable to calculate debt");
+            e.printStackTrace();
+            return 0;
+        }
     }
 
 

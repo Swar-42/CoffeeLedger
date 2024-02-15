@@ -31,7 +31,7 @@ public abstract class TopicMenu extends Topic {
         mainMenu();
     }
 
-    public void addItemMenu() {
+    public TopicItem addItemMenu() {
         String name = Input.getString("Enter the name for the new " + type + ": ");
         // check for existence of 'name'
         try {
@@ -42,17 +42,17 @@ public abstract class TopicMenu extends Topic {
                     TopicItem item = db.getItem(type.tableName(), name);
                     System.out.println();
                     item.mainMenu();
-                    return;
+                    return db.getItem(type.tableName(), name);
                 }
                 System.out.println("The " + type + " \"" + name + "\" will not be changed.");
-                return;
+                return db.getItem(type.tableName(), name);
             }
         } catch (SQLException e) {
             System.err.println("Unable to check existence of order \"" + name + "\"");
             e.printStackTrace();
-            return;
+            return null;
         }
-        addItem(name);
+        return addItem(name);
     }
 
     public void listMenu() {
@@ -89,5 +89,5 @@ public abstract class TopicMenu extends Topic {
         return optionSelect.prompt();
     }
 
-    protected abstract void addItem(String name);
+    protected abstract TopicItem addItem(String name);
 }
