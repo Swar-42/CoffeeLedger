@@ -32,3 +32,7 @@ CREATE TABLE stored_vars (
 
 INSERT INTO stored_vars (person_to_pay) VALUES
     (NULL);
+
+INSERT INTO people (name, bought, paid) VALUES
+    ('Bob', 0, 0),
+    ('Jeremy', 0, 0);
