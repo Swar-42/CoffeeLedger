@@ -21,11 +21,15 @@ public class GroupOrderMenu extends TopicMenu {
 
         do {
             TopicList listSelect = new PersonList();
-            TopicItem item = listSelect.getSelection("Choose a person above to add to the order.");
+            TopicItem item = listSelect.getSelection("Choose a person above to add to the order.", true);
             if (item == null) break;
             String personName = item.getName();
+            if (orderMap.containsKey(personName)) {
+                System.out.println(personName + " has already ordered.");
+                continue;
+            }
             listSelect = new OrderList();
-            item = listSelect.getSelection("What will " + personName + " order?");
+            item = listSelect.getSelection("What will " + personName + " order?", true);
             if (item == null) break;
             String orderName = item.getName();
             orderMap.put(personName, orderName);
@@ -33,12 +37,14 @@ public class GroupOrderMenu extends TopicMenu {
 
         if (orderMap.isEmpty()) {
             System.out.println("Group Order \"" + name + "\" cancelled.");
+            System.out.println();
             return null;
         }
 
         try {
             db.addGroupOrder(name, orderMap);
             System.out.println(String.format("Group Order \"%s\" added.", name));
+            System.out.println();
             return db.getItem(type.tableName(), name);
         } catch (SQLException e) {
             System.err.println("Unable to add Group Order \"" + name + "\"");

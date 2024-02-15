@@ -7,5 +7,10 @@ public class OrderList extends TopicList {
     protected void setTopicType() {
         type = TopicType.ORDER;
     }
+
+    @Override
+    protected TopicMenu makeTopicMenu() {
+        return new OrderMenu();
+    }
     
 }

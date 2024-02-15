@@ -146,7 +146,11 @@ public class CoffeeLedger {
         + "    JOIN group_order_details AS gd ON p.id = gd.person_id "
         + "    JOIN group_orders AS g ON g.id = gd.group_order_id "
         + "    JOIN orders AS o ON o.id = gd.order_id "
-        + "  WHERE g.id = " + id + " AND p_out.id = p.id);";
+        + "  WHERE g.id = " + id + " AND p_out.id = p.id) "
+        + "WHERE p_out.id IN "
+        + "  (SELECT gd.person_id "
+        + "  FROM group_order_details AS gd "
+        + "  WHERE gd.group_order_id = " + id + ");";
         stmt.execute(sql);
 
         stmt.close();
@@ -296,8 +300,6 @@ public class CoffeeLedger {
 
         stmt.close();
         rs.close();
-
-
         return (s.equals("TRUE"));
     }
 
@@ -447,8 +449,11 @@ public class CoffeeLedger {
         + "FROM people AS p "
         + "JOIN stored_vars AS sv ON sv.person_to_pay = p.id;";
         ResultSet rs = stmt.executeQuery(sql);
-        rs.next();
-        String out = rs.getString(1);
+
+        String out = null;
+        if (rs.next()) {
+            out = rs.getString(1);
+        }
         
         rs.close();
         stmt.close();
@@ -478,6 +483,9 @@ public class CoffeeLedger {
         values.add(rs.getString(1));
         values.add(rs.getString(2));
         values.add(rs.getString(3));
+
+        stmt.close();
+        rs.close();
         return new PersonItem(values);
     }
 
@@ -492,6 +500,9 @@ public class CoffeeLedger {
         List<String> values = new ArrayList<String>(); 
         values.add(rs.getString(1));
         values.add(rs.getString(2));
+
+        stmt.close();
+        rs.close();
         return new OrderItem(values);
     }
 
@@ -505,6 +516,9 @@ public class CoffeeLedger {
         rs.next();
         List<String> values = new ArrayList<String>(); 
         values.add(rs.getString(1));
+
+        stmt.close();
+        rs.close();
         return new GroupOrderItem(values);
     }
 

@@ -20,7 +20,7 @@ public abstract class TopicItem extends Topic {
         this.values = values;
     }
 
-    public void mainMenu() {
+    public TopicItem mainMenu() {
         List<String> editOptions = new ArrayList<String>();
         for (String name : colNames) {
             editOptions.add("Edit " + name);
@@ -35,13 +35,13 @@ public abstract class TopicItem extends Topic {
         } else if (choice == values.size() + 1) {
             System.out.println();
             boolean deleted = deleteItem();
-            if (deleted) return;
+            if (deleted) return null;
         } else {
-            return;
+            return this;
         }
 
         System.out.println();
-        mainMenu();
+        return mainMenu();
     }
 
     public String getName() {
@@ -53,6 +53,12 @@ public abstract class TopicItem extends Topic {
         String colName = colNames.get(index);
         List<String> newValue = getValueInput(index, "Enter the new " + colName + " for \"" + name + "\": ");
         String prevValue = values.get(index);
+
+        if (index == 0 && nameExists(newValue.get(0))) { // names should be unique
+            System.out.println("Invalid name. \"" + newValue.get(1) + "\" already exists.");
+            editColumn(index);
+            return;
+        }
         
         try {
             db.changeValue(name, colName, type.tableName(), newValue.get(0));
@@ -62,6 +68,16 @@ public abstract class TopicItem extends Topic {
             System.err.println("Unable to change " + colName + " of " + type + " from " + prevValue + " to " + newValue.get(1));
             e.printStackTrace();
         }
+    }
+
+    private boolean nameExists(String name) {
+        try {
+            return db.dataExists("name", type.tableName(), name);
+        } catch (SQLException e) {
+            System.err.println("Unable to detect existence of name " + name + " for " + type);
+            e.printStackTrace();
+        }
+        return true;
     }
 
     protected boolean deleteItem() {

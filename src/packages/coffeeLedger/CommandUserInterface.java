@@ -60,7 +60,7 @@ public class CommandUserInterface {
         mainMenu();
     }
 
-    private static void processGroupOrder() {
+    public static void processGroupOrder() {
         String potentialPayer = getToPay();
         String personToPay = null;
         if (potentialPayer != null) {
@@ -68,12 +68,13 @@ public class CommandUserInterface {
         }
         BooleanSelect savedSelect = new BooleanSelect("Use a saved group order? ");
         boolean useSavedOrder = savedSelect.prompt();
+        System.out.println();
         TopicItem groupOrder = null;
         if (useSavedOrder) {
             TopicList groupOrderList = new GroupOrderList();
-            groupOrder = groupOrderList.getSelection("Select an above group order to process.");
+            groupOrder = groupOrderList.getSelection("Select an above group order to process.", false);
         }
-        if (!useSavedOrder || groupOrder == null) {
+        while (groupOrder == null) {
             TopicMenu groupOrderMenu = new GroupOrderMenu();
             groupOrder = groupOrderMenu.addItemMenu();
         }
@@ -84,23 +85,42 @@ public class CommandUserInterface {
         if (personToPay == null) {
             potentialPayer = toPayPrompt();
             personToPay = confirmToPay(potentialPayer);
-            if (personToPay == null) {
+            while (personToPay == null) {
                 TopicList personSelect = new PersonList();
-                TopicItem selectedPerson = personSelect.getSelection("Select who will pay from the above.");
-                personToPay = selectedPerson.getName();
+                TopicItem selectedPerson = personSelect.getSelection("Select who will pay from the above.", true);
+                if (selectedPerson != null) {
+                    personToPay = selectedPerson.getName();
+                }
             }
         }
         System.out.println(String.format("%s will be charged $%,.2f for the group order.", personToPay, cost));
         chargePerson(personToPay, cost);
+        updateToPay();
+    }
+
+    public static void toPayMenu() {
+        String personToPay = toPayPrompt();
+        personToPay = confirmToPay(personToPay);
+        if (personToPay == null) return;
+        saveToPay(personToPay);
     }
 
     private static void updateBought(String groupOrderName) {
         try {
             db.updateBought(groupOrderName);
-            db.setToPay(db.mostDebt());
+            updateToPay();
             System.out.println("Paid amounts for group order \"" + groupOrderName + "\" updated.");
         } catch (SQLException e) {
             System.err.println("Unable to update paid amounts for group order \"" + groupOrderName + "\"");
+            e.printStackTrace();
+        }
+    }
+
+    private static void updateToPay() {
+        try {
+            db.setToPay(db.mostDebt());
+        } catch (SQLException e) {
+            System.err.println("Unable to update who should pay.");
             e.printStackTrace();
         }
     }
@@ -113,13 +133,6 @@ public class CommandUserInterface {
             System.err.println("Unable to charge " + name + " $" + cost );
             e.printStackTrace();
         }
-    }
-
-    private static void toPayMenu() {
-        String personToPay = toPayPrompt();
-        personToPay = confirmToPay(personToPay);
-        if (personToPay == null) return;
-        saveToPay(personToPay);
     }
 
     private static String toPayPrompt() {

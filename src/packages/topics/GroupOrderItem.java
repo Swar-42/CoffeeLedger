@@ -11,10 +11,10 @@ public class GroupOrderItem extends TopicItem {
     }
 
     @Override
-    public void mainMenu() {
+    public TopicItem mainMenu() {
         List<String> options = new ArrayList<String>();
         options.add("Edit name");
-        options.add("Add/Edit individual orders");
+        // options.add("Add/Edit individual orders");
         options.add("Delete group order");
         OptionSelect select = new OptionSelect("Selected: " + this.toString(), options, "Back");
         int choice = select.prompt();
@@ -24,20 +24,20 @@ public class GroupOrderItem extends TopicItem {
                 System.out.println();
                 editColumn(0);
                 break;
+            // case 2:
+            //     System.out.println();
+            //     // add/edit individual orders
+            //     break;
             case 2:
                 System.out.println();
-                // add/edit individual orders
-                break;
-            case 3:
-                System.out.println();
                 boolean deleted = deleteItem();
-                if (deleted) return;
+                if (deleted) return null;
             case 0:
-                return;
+                return this;
         }
 
         System.out.println();
-        mainMenu();
+        return mainMenu();
     }
 
     @Override

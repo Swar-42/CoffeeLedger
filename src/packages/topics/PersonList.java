@@ -7,4 +7,9 @@ public class PersonList extends TopicList {
     protected void setTopicType() {
         type = TopicType.PERSON;
     }
+
+    @Override
+    protected TopicMenu makeTopicMenu() {
+        return new PersonMenu();
+    }
 }

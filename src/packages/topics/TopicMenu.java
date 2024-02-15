@@ -41,8 +41,7 @@ public abstract class TopicMenu extends Topic {
                 if (editExisting) {
                     TopicItem item = db.getItem(type.tableName(), name);
                     System.out.println();
-                    item.mainMenu();
-                    return db.getItem(type.tableName(), name);
+                    return item.mainMenu();
                 }
                 System.out.println("The " + type + " \"" + name + "\" will not be changed.");
                 return db.getItem(type.tableName(), name);
@@ -57,7 +56,7 @@ public abstract class TopicMenu extends Topic {
 
     public void listMenu() {
         TopicList topicList = makeTopicList();
-        TopicItem item = topicList.getSelection("Select an item from the above.");
+        TopicItem item = topicList.getSelection("Select an item from the above.", false);
 
         if (item == null) {
             return;

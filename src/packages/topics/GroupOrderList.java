@@ -7,4 +7,9 @@ public class GroupOrderList extends TopicList {
     protected void setTopicType() {
         type = TopicType.GROUP_ORDER;
     }
+
+    @Override
+    protected TopicMenu makeTopicMenu() {
+        return new GroupOrderMenu();
+    }
 }
