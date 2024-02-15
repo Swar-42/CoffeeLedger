@@ -117,17 +117,18 @@ public class CommandUserInterface {
         if (chargePerson) {
             return potentialPayer;
         }
+        return null;
 }
 
     private static void saveToPay(String name) {
         try {
-            db.setToPay(personToPay);
+            db.setToPay(name);
         } catch (SQLException e) {
             System.err.println("SQL error: unable to set person_to_pay variable");
             e.printStackTrace();
             return;
         }
-        System.out.println(personToPay + " saved as person to pay for the next order.");
+        System.out.println(name + " saved as person to pay for the next order.");
     }
 
     private static String mostDebt() {
