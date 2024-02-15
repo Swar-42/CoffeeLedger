@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import packages.coffeeLedger.CoffeeLedger;
+import packages.input.BooleanSelect;
+import packages.input.Input;
 import packages.input.OptionSelect;
 
 public abstract class TopicMenu extends Topic {
@@ -14,12 +16,12 @@ public abstract class TopicMenu extends Topic {
         switch (choice) {
             case 1:
                 System.out.println();
-                // add item
+                addItemMenu();
                 System.out.println();
                 break;
             case 2:
                 System.out.println();
-                editList();
+                editListMenu();
                 System.out.println();
                 break;
             case 0:
@@ -29,7 +31,30 @@ public abstract class TopicMenu extends Topic {
         mainMenu();
     }
 
-    private void editList() {
+    private void addItemMenu() {
+        String name = Input.getString("Enter the name for the new " + type + ": ");
+        // check for existence of 'name'
+        try {
+            if (db.dataExists("name", type.tableName(), "\'" + name + "\'")) {
+                BooleanSelect overwritePrompt = new BooleanSelect("Order \"" + name + "\" already exists. Edit this existing order instead?");
+                boolean editExisting = overwritePrompt.prompt();
+                if (editExisting) {
+                    TopicItem item = db.getItem(type.tableName(), name);
+                    item.mainMenu();
+                    return;
+                }
+                System.out.println("The order \"" + name + "\" will not be changed.");
+                return;
+            }
+        } catch (SQLException e) {
+            System.err.println("Unable to check existence of order \"" + name + "\"");
+            e.printStackTrace();
+            return;
+        }
+        addItem(name);
+    }
+
+    private void editListMenu() {
         List<TopicItem> itemList;
         try {
             itemList = db.getTable(type.tableName());
@@ -40,7 +65,7 @@ public abstract class TopicMenu extends Topic {
         }
         boolean doRepeat = listSetup(itemList);
 
-        if (doRepeat) editList();
+        if (doRepeat) editListMenu();
     }
 
     private boolean listSetup(List<TopicItem> itemList) {
@@ -68,4 +93,6 @@ public abstract class TopicMenu extends Topic {
         OptionSelect optionSelect = new OptionSelect("What would you like to do?", options, "Back");
         return optionSelect.prompt();
     }
+
+    protected abstract void addItem(String name);
 }

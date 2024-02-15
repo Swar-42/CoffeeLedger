@@ -416,6 +416,60 @@ public class CoffeeLedger {
         stmt.close();
         return out;
     }
+
+    public TopicItem getItem(String tableName, String name) throws SQLException {
+        if (tableName.equals("people")) {
+            return getPeopleItem(name);
+        } else if (tableName.equals("orders")) {
+            return getOrdersItem(name);
+        } else if (tableName.equals("group_orders")) {
+            return getGroupOrdersItem(name);
+        }
+        throw new IllegalArgumentException("invalid table name " + tableName + " for getting an item");
+    }
+
+    private TopicItem getPeopleItem(String name) throws SQLException {
+        int id = getId(name, "people");
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "SELECT name, bought, paid FROM people "
+        + "WHERE id = " + id + ";";
+        ResultSet rs = stmt.executeQuery(sql);
+        rs.next();
+        List<String> values = new ArrayList<String>(); 
+        values.add(rs.getString(1));
+        values.add(rs.getString(2));
+        values.add(rs.getString(3));
+        return new PersonItem(values);
+    }
+
+    private TopicItem getOrdersItem(String name) throws SQLException {
+        int id = getId(name, "orders");
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "SELECT name, price FROM orders "
+        + "WHERE id = " + id + ";";
+        ResultSet rs = stmt.executeQuery(sql);
+        rs.next();
+        List<String> values = new ArrayList<String>(); 
+        values.add(rs.getString(1));
+        values.add(rs.getString(2));
+        return new OrderItem(values);
+    }
+
+    private TopicItem getGroupOrdersItem(String name) throws SQLException {
+        int id = getId(name, "group_orders");
+        Statement stmt = conn.createStatement();
+        String sql = 
+          "SELECT name FROM group_orders "
+        + "WHERE id = " + id + ";";
+        ResultSet rs = stmt.executeQuery(sql);
+        rs.next();
+        List<String> values = new ArrayList<String>(); 
+        values.add(rs.getString(1));
+        return new GroupOrderItem(values);
+    }
+
     public List<TopicItem> getTable(String tableName) throws SQLException {
         if (tableName.equals("people")) {
             return getPeopleTable();
