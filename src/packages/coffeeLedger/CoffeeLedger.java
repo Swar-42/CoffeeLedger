@@ -503,7 +503,7 @@ public class CoffeeLedger {
         List<TopicItem> out = new ArrayList<TopicItem>();
 
         Statement stmt = conn.createStatement();
-        String sql = "SELECT name, bought, paid FROM orders;";
+        String sql = "SELECT name, bought, paid FROM people;";
         ResultSet rs = stmt.executeQuery(sql);
         while (rs.next()) {
             List<String> row = new ArrayList<String>();

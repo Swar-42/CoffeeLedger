@@ -1,11 +1,9 @@
 package packages.coffeeLedger;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import packages.input.*;
 import packages.topics.*;
@@ -38,7 +36,7 @@ public class CommandUserInterface {
                 break;
             case 3:
                 System.out.println();
-                subMenu = new PeopleMenu();
+                subMenu = new PersonMenu();
                 subMenu.mainMenu();
                 System.out.println();
                 break;

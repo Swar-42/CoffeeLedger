@@ -15,6 +15,7 @@ public abstract class TopicItem extends Topic {
 
     public TopicItem(List<String> values) {
         super();
+        colNames = new ArrayList<String>();
         setColNames();
         this.values = values;
     }

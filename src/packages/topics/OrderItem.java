@@ -38,7 +38,6 @@ public class OrderItem extends TopicItem {
 
     @Override
     protected void setColNames() {
-        colNames = new ArrayList<String>();
         colNames.add("name");
         colNames.add("price");
     }

@@ -31,19 +31,19 @@ public abstract class TopicMenu extends Topic {
         mainMenu();
     }
 
-    private void addItemMenu() {
+    public void addItemMenu() {
         String name = Input.getString("Enter the name for the new " + type + ": ");
         // check for existence of 'name'
         try {
             if (db.dataExists("name", type.tableName(), "\'" + name + "\'")) {
-                BooleanSelect overwritePrompt = new BooleanSelect("Order \"" + name + "\" already exists. Edit this existing order instead?");
+                BooleanSelect overwritePrompt = new BooleanSelect(type + " \"" + name + "\" already exists. Edit this existing " + type + " instead?");
                 boolean editExisting = overwritePrompt.prompt();
                 if (editExisting) {
                     TopicItem item = db.getItem(type.tableName(), name);
                     item.mainMenu();
                     return;
                 }
-                System.out.println("The order \"" + name + "\" will not be changed.");
+                System.out.println("The " + type + " \"" + name + "\" will not be changed.");
                 return;
             }
         } catch (SQLException e) {
@@ -54,7 +54,7 @@ public abstract class TopicMenu extends Topic {
         addItem(name);
     }
 
-    private void editListMenu() {
+    public void editListMenu() {
         List<TopicItem> itemList;
         try {
             itemList = db.getTable(type.tableName());

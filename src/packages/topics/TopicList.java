@@ -18,6 +18,7 @@ public abstract class TopicList extends Topic {
             rowDisplay.add(list.get(i).rowFormat());
         }
         OptionSelect itemSelect = new OptionSelect("Select an item from the above to edit.", rowDisplay, "Back");
+        itemSelect.displayTitleAbove(false);
         int choice = itemSelect.prompt();
 
         if (choice == 0) {
