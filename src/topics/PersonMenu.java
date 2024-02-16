@@ -2,6 +2,9 @@ package topics;
 
 import java.sql.SQLException;
 
+/**
+ * Describes a TopicMenu of the PERSON TopicType
+ */
 public class PersonMenu extends TopicMenu {
 
     @Override

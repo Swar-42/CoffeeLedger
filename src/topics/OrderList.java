@@ -1,5 +1,8 @@
 package topics;
 
+/**
+ * Describes a TopicList of the ORDER TopicType
+ */
 public class OrderList extends TopicList {
 
     @Override

@@ -8,9 +8,16 @@ import input.BooleanSelect;
 import input.Input;
 import input.OptionSelect;
 
+/**
+ * Describes a single row of data from the accessible tables in the database
+ * Includes options for modifying/deleting this data from the database
+ */
 public abstract class TopicItem extends Topic {
-    protected static List<String> colNames;
+    
     protected static CoffeeLedger db = CoffeeLedger.getInstance();
+    // the labels for each value (corresponds with database)
+    protected static List<String> colNames;
+    // the row of values from the database
     protected List<String> values;
 
     public TopicItem(List<String> values) {
@@ -20,6 +27,11 @@ public abstract class TopicItem extends Topic {
         this.values = values;
     }
 
+    /**
+     * Command-line main point of entry for modifying this TopicItem.
+     * modification options include editing of any value as well as deletion of the TopicItem.
+     * @return this TopicItem, or null if this TopicItem has been deleted from the database.
+     */
     public TopicItem mainMenu() {
         List<String> editOptions = new ArrayList<String>();
         for (String name : colNames) {
@@ -44,10 +56,18 @@ public abstract class TopicItem extends Topic {
         return mainMenu();
     }
 
+    /**
+     * returns the unique principal label for the data
+     * @return name of the TopicItem
+     */
     public String getName() {
         return values.get(0);
     }
 
+    /**
+     * CLI for editing a specific value of the TopicItem
+     * @param index index of the label whose value we are editing.
+     */
     protected void editColumn(int index) {
         String name = values.get(0);
         String colName = colNames.get(index);
@@ -70,6 +90,11 @@ public abstract class TopicItem extends Topic {
         }
     }
 
+    /**
+     * checks if the given name already exists in the database
+     * @param name name to check
+     * @return true if the name is already in the database, false otherwise
+     */
     private boolean nameExists(String name) {
         try {
             return db.dataExists("name", type.tableName(), name);
@@ -80,6 +105,10 @@ public abstract class TopicItem extends Topic {
         return true;
     }
 
+    /**
+     * CLI for deletion of this TopicItem from the database
+     * @return true if the data was deleted, false otherwise
+     */
     protected boolean deleteItem() {
         BooleanSelect confirm = new BooleanSelect("Are you sure you want to delete the " + type + " \"" + values.get(0) + "\"?");
         Boolean doDelete = confirm.prompt();
@@ -116,8 +145,15 @@ public abstract class TopicItem extends Topic {
         return out;
     }
 
+    /**
+     * the display format for enumerating a row of the values inside this TopicItem
+     * @return
+     */
     public abstract String rowFormat();
 
+    /**
+     * sets the label for each value (corresponds with database column names)
+     */
     protected abstract void setColNames();
     
 }

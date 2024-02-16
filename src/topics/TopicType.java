@@ -1,4 +1,9 @@
 package topics;
+
+/**
+ * Encompasses the 'Coffee Topics' which can be similarly modified in the CoffeeLedger program
+ * Each topic corresponds to data in one table of the database. 
+ */
 public enum TopicType {
     PERSON ("person"), ORDER ("individual order"), GROUP_ORDER ("group order");
 
@@ -25,6 +30,10 @@ public enum TopicType {
         }
     }
 
+    /**
+     * 
+     * @return the name of the table the topic corresponds to
+     */
     public String tableName() {
         switch (this) {
             case PERSON:

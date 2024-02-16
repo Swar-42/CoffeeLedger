@@ -4,6 +4,9 @@ import java.util.List;
 
 import input.Input;
 
+/**
+ * Describes a TopicItem of the ORDER TopicType
+ */
 public class OrderItem extends TopicItem {
 
     public OrderItem(List<String> values) {

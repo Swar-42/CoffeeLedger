@@ -1,7 +1,13 @@
 package input;
+
+/**
+ * Describes a simple mechanism for Yes/No prompting and recieving that input
+ */
 public class BooleanSelect {
+    // text to prompt the user with at command-line.
     private String text;
 
+    // regular expressions to match yes and no with
     private static final String REGEX_YES = "(?i)^Y|YES";
     private static final String REGEX_NO =  "(?i)^N|NO";
 
@@ -9,6 +15,10 @@ public class BooleanSelect {
         this.text = text;
     }
 
+    /**
+     * prompts the user with a yes/no question and returns their response
+     * @return true if yes, false if no.
+     */
     public Boolean prompt() {
         while (true) {
             System.out.println(text);

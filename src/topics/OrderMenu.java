@@ -4,6 +4,9 @@ import java.sql.SQLException;
 
 import input.Input;
 
+/**
+ * Describes a TopicMenu of the ORDER TopicType
+ */
 public class OrderMenu extends TopicMenu {
 
     @Override

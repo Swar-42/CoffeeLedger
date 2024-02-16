@@ -6,10 +6,16 @@ import java.util.List;
 import input.*;
 import topics.*;
 
+/**
+ * A Command-Line Interface for interacting with the CoffeeLedger database.
+ */
 public class CommandUserInterface {
 
     private static CoffeeLedger db = CoffeeLedger.getInstance();
 
+    /**
+     * The main entry point for the CoffeeLedger program
+     */
     public static void mainMenu() {
         List<String> options = new ArrayList<String>();
         options.add("Who should pay next?");
@@ -58,6 +64,10 @@ public class CommandUserInterface {
         mainMenu();
     }
 
+    /*
+     * Command-line interface for processing a group order, including loading a saved group order or making a new one.
+     * Provides suggestions on who should pay for the group order
+     */
     public static void processGroupOrder() {
         String potentialPayer = getToPay();
         String personToPay = null;
@@ -97,6 +107,9 @@ public class CommandUserInterface {
         updateToPay();
     }
 
+    /**
+     * command line interface for determining who should pay for the next group order (without information about that upcoming order)
+     */
     public static void toPayMenu() {
         String personToPay = toPayPrompt();
         personToPay = confirmToPay(personToPay);
@@ -104,6 +117,10 @@ public class CommandUserInterface {
         saveToPay(personToPay);
     }
 
+    /**
+     * calls on the database to update the bought values for all people involved in the group order
+     * @param groupOrderName name of the group order which is used to update bought values
+     */
     private static void updateBought(String groupOrderName) {
         try {
             db.updateBought(groupOrderName);
@@ -115,6 +132,9 @@ public class CommandUserInterface {
         }
     }
 
+    /**
+     * sets the person_to_pay stored variable in the database as the person with the most debt.
+     */
     private static void updateToPay() {
         try {
             db.setToPay(db.mostDebt());
@@ -124,6 +144,11 @@ public class CommandUserInterface {
         }
     }
 
+    /**
+     * charges provided person by adding cost to their 'paid' value
+     * @param name name of the person to charge
+     * @param cost amount to charge the person for
+     */
     private static void chargePerson(String name, double cost) {
         try {
             db.addPaid(name, cost);
@@ -134,6 +159,10 @@ public class CommandUserInterface {
         }
     }
 
+    /**
+     * prompts the user with information about who should pay next
+     * @return name of the person suggested to pay next for a group order
+     */
     private static String toPayPrompt() {
         String personToPay = mostDebt();
         double debt = getDebt(personToPay);
@@ -142,6 +171,11 @@ public class CommandUserInterface {
         return personToPay;
     }
 
+    /**
+     * prompts the user to confirm if the potential payer will pay for the next group order
+     * @param potentialPayer person to potentially next pay for a group order
+     * @return name of the person who user has decided should pay next. null if user is undecided.
+     */
     private static String confirmToPay(String potentialPayer) {
         BooleanSelect payPrompt = new BooleanSelect(String.format("Will %s pay for the next order? (Debt: $%,.2f)", potentialPayer, getDebt(potentialPayer)));
         boolean chargePerson = payPrompt.prompt();
@@ -149,8 +183,12 @@ public class CommandUserInterface {
             return potentialPayer;
         }
         return null;
-}
+    }
 
+    /**
+     * saves the given person as the next to pay for a group order in the database
+     * @param name name of the person to save
+     */
     private static void saveToPay(String name) {
         try {
             db.setToPay(name);
@@ -162,6 +200,10 @@ public class CommandUserInterface {
         System.out.println(name + " saved as person to pay for the next order.");
     }
 
+    /**
+     * retrieves the person with the most debt from the database
+     * @return name of the person with the most debt
+     */
     private static String mostDebt() {
         try {
             return db.mostDebt();
@@ -172,6 +214,10 @@ public class CommandUserInterface {
         }
     }
 
+    /**
+     * gets the person to pay for the next group order according the the stored value in the database
+     * @return
+     */
     private static String getToPay() {
         try {
             return db.getToPay();
@@ -182,6 +228,11 @@ public class CommandUserInterface {
         }
     }
 
+    /**
+     * gets the total debt of the provided person as a double (negative if they are not in debt)
+     * @param name name of the person to query
+     * @return the person's total debt
+     */
     private static double getDebt(String name) {
         try {
             return db.getDebt(name);
@@ -192,6 +243,11 @@ public class CommandUserInterface {
         }
     }
 
+    /**
+     * gets the total cost of the given group order as a double
+     * @param groupOrderName name of the group order to query
+     * @return the total cost of the group order
+     */
     private static double calcCost(String groupOrderName) {
         try {
             return db.getCost(groupOrderName);
@@ -206,5 +262,11 @@ public class CommandUserInterface {
     public static void main(String[] args) {
         
         mainMenu();
+        try {
+            CoffeeLedger.getInstance().close();
+        } catch (SQLException e) {
+            System.err.println("Unable to close database connection");
+            e.printStackTrace();
+        }
     }
 }

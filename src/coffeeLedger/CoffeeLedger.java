@@ -22,24 +22,34 @@ import topics.OrderItem;
 import topics.PersonItem;
 import topics.TopicItem;
 
-
+/**
+ * Singleton class which directly interfaces with the h2 database and issues it SQL commands.
+ */
 public class CoffeeLedger {
     public static final String[] COLUMN_LABELS = new String[]{"name", "bought", "paid", "price"};
+    // the names of the columns which are accessible by an outsider
     public static final Set<String> accessibleColumns = new HashSet<String>(Arrays.asList(COLUMN_LABELS));
     public static final String[] TABLE_NAMES = new String[]{"people", "orders", "group_orders"};
+    // the names of the tables which are accessible by an outsider
     public static final Set<String> accessibleTables = new HashSet<String>(Arrays.asList(TABLE_NAMES));
 
+    // the connection to the database
     private Connection conn;
+    // the singleton instance of this
     private static CoffeeLedger instance = null;
     
     private CoffeeLedger() {
         try {
             load();
         } catch (ClassNotFoundException | SQLException | IOException e) {
+            System.err.println("Unable to load database");
             e.printStackTrace();
         }
     }
 
+    /*
+     * gets the singleton instance of the class.
+     */
     public static CoffeeLedger getInstance() {
         if (instance == null) {
             instance = new CoffeeLedger();
@@ -47,6 +57,10 @@ public class CoffeeLedger {
         return instance;
     }
 
+    /**
+     * closes the database connection
+     * @throws SQLException
+     */
     public void close() throws SQLException {
         conn.close();
     }
@@ -80,9 +94,9 @@ public class CoffeeLedger {
     }
 
     /**
-     * 
+     * Returns the group order as a map of person name to their order's price.
      * @param name name of the group order
-     * @return a map of person name to their order's cost
+     * @return a map of person name to their order's price
      */
     public Map<String, Double> getGroupOrder(String name) throws SQLException {
         int groupOrderId = getId(name, "group_orders");
@@ -120,6 +134,12 @@ public class CoffeeLedger {
         stmt.close();
     }
 
+    /**
+     * Adds the given amount to the person's 'paid' total
+     * @param name - name of person to modify
+     * @param cost - price to add to their 'paid' column
+     * @throws SQLException
+     */
     public void addPaid(String name, double cost) throws SQLException {
         int personId = getId(name, "people");
         Statement stmt = conn.createStatement();
@@ -132,6 +152,11 @@ public class CoffeeLedger {
         stmt.close();
     }
 
+    /**
+     * Adds the corresponding price for each item in the group order to the proper person's 'bought' column
+     * @param groupOrderName - name of the group order to process
+     * @throws SQLException
+     */
     public void updateBought(String groupOrderName) throws SQLException {
         int id = getId(groupOrderName, "group_orders");
         Statement stmt = conn.createStatement();
@@ -155,7 +180,7 @@ public class CoffeeLedger {
 
     /**
      * calculates the person (from the people table) with the most debt (bought - paid)
-     * @return
+     * @return name of the person with the most debt.
      * @throws SQLException
      */
     public String mostDebt() throws SQLException {
@@ -175,6 +200,12 @@ public class CoffeeLedger {
         return out;
     }
 
+    /**
+     * calculates and returns the debt of the provided person.
+     * @param name name of the person to calculate debt
+     * @return amount of debt for provided person
+     * @throws SQLException
+     */
     public double getDebt(String name) throws SQLException {
         int id = getId(name, "people");
         Statement stmt = conn.createStatement();
@@ -190,6 +221,12 @@ public class CoffeeLedger {
         return out;
     }
 
+    /**
+     * calculates and returns the total cost of the given group order
+     * @param groupOrderName name of the group order to calculate cost with
+     * @return the total cost of the group order
+     * @throws SQLException
+     */
     public double getCost(String groupOrderName) throws SQLException {
         int id = getId(groupOrderName, "group_orders");
         Statement stmt = conn.createStatement();
@@ -207,6 +244,13 @@ public class CoffeeLedger {
         return cost;
     }
 
+    /**
+     * returns an entire column of a given table as a list of strings
+     * @param colName name of the column to get
+     * @param tableName name of the table to get
+     * @return the entire column queried as a list of strings
+     * @throws SQLException
+     */
     public List<String> getColumn(String colName, String tableName) throws SQLException {
         if (!validTable(tableName) || !validColumn(colName)) {
             throw new IllegalArgumentException("Invalid table name (" + tableName + ") or column name (" + colName + ")");
@@ -225,6 +269,14 @@ public class CoffeeLedger {
         return out;
     }
 
+    /**
+     * returns the value at rowName and colName in tableName as a String
+     * @param rowName name of the row from which to get the value
+     * @param colName name of the column from which to get the value
+     * @param tableName name of the table from which to get the value
+     * @return the value at the specified row, column, and table
+     * @throws SQLException
+     */
     public String getValue(String rowName, String colName, String tableName) throws SQLException {
         if (!validTable(tableName) || !validColumn(colName)) {
             throw new IllegalArgumentException("Invalid table name (" + tableName + ") or column name (" + colName + ")");
@@ -244,6 +296,14 @@ public class CoffeeLedger {
         return out;
     }
 
+    /**
+     * updates the value at the provided row, column, and table with a new String value
+     * @param rowName name of the row from which to update a value
+     * @param colName name of the column from which to update a value
+     * @param tableName name of the table from which to update a value
+     * @param newValue name of the table from which to update a value
+     * @throws SQLException
+     */
     public void changeValue(String rowName, String colName, String tableName, String newValue) throws SQLException {
         if (!validTable(tableName) || !validColumn(colName)) {
             throw new IllegalArgumentException("Invalid table name (" + tableName + ") or column name (" + colName + ")");
@@ -260,6 +320,12 @@ public class CoffeeLedger {
         stmt.close();
     }
 
+    /**
+     * removes the row with the specified name from the specified table
+     * @param rowName the name of the row to remove
+     * @param tableName the table from which to remove a row
+     * @throws SQLException
+     */
     public void removeRow(String rowName, String tableName) throws SQLException {
         if (!validTable(tableName)) {
             throw new IllegalArgumentException("Invalid table name (" + tableName + ")");
@@ -277,9 +343,10 @@ public class CoffeeLedger {
 
     /**
      * checks if the provided data is in the given table
+     * @param colName name of the column to check
      * @param dataName name of data to check existence of
      * @param tableName table to check
-     * @return True if data is in table, false otherwise
+     * @return true if data is in table, false otherwise
      * @throws SQLException
      */
     public boolean dataExists(String colName, String tableName, String dataName) throws SQLException {
@@ -431,6 +498,11 @@ public class CoffeeLedger {
         stmt.close();
     }
 
+    /**
+     * stores the given name as the person next up to pay for a group order
+     * @param name name of the person to store (as an id)
+     * @throws SQLException
+     */
     public void setToPay(String name) throws SQLException {
         int personId = getId(name, "people");
         Statement stmt = conn.createStatement();
@@ -439,6 +511,11 @@ public class CoffeeLedger {
         stmt.close();   
     }
 
+    /**
+     * gets the stored person next up to pay for a group order
+     * @return name of the person to pay
+     * @throws SQLException
+     */
     public String getToPay() throws SQLException {
         Statement stmt = conn.createStatement();
         String sql = 
@@ -457,6 +534,13 @@ public class CoffeeLedger {
         return out;
     }
 
+    /**
+     * retrieves a row from the provided table, returning it as a TopicItem
+     * @param tableName name of the table to query
+     * @param name name of the item to get
+     * @return the row containing 'name' as its name, as a TopicItem
+     * @throws SQLException
+     */
     public TopicItem getItem(String tableName, String name) throws SQLException {
         if (tableName.equals("people")) {
             return getPeopleItem(name);
@@ -468,6 +552,12 @@ public class CoffeeLedger {
         throw new IllegalArgumentException("invalid table name " + tableName + " for getting an item");
     }
 
+    /**
+     * retrieves a row from the 'people' table as a TopicItem
+     * @param name name of the row to query
+     * @return a row from 'people' as a TopicItem
+     * @throws SQLException
+     */
     private TopicItem getPeopleItem(String name) throws SQLException {
         int id = getId(name, "people");
         Statement stmt = conn.createStatement();
@@ -486,6 +576,12 @@ public class CoffeeLedger {
         return new PersonItem(values);
     }
 
+    /**
+     * retrieves a row from the 'orders' table as a TopicItem
+     * @param name name of the row to query
+     * @return a row from 'orders' as a TopicItem
+     * @throws SQLException
+     */
     private TopicItem getOrdersItem(String name) throws SQLException {
         int id = getId(name, "orders");
         Statement stmt = conn.createStatement();
@@ -503,6 +599,12 @@ public class CoffeeLedger {
         return new OrderItem(values);
     }
 
+    /**
+     * retrieves a row from the 'group orders' table as a TopicItem
+     * @param name name of the row to query
+     * @return a row from 'group orders' as a TopicItem
+     * @throws SQLException
+     */
     private TopicItem getGroupOrdersItem(String name) throws SQLException {
         int id = getId(name, "group_orders");
         Statement stmt = conn.createStatement();
@@ -519,6 +621,12 @@ public class CoffeeLedger {
         return new GroupOrderItem(values);
     }
 
+    /**
+     * returns an entire table as a list of TopicItems
+     * @param tableName the name of the table to query
+     * @return all rows from the table as a list of TopicItems
+     * @throws SQLException
+     */
     public List<TopicItem> getTable(String tableName) throws SQLException {
         if (tableName.equals("people")) {
             return getPeopleTable();
@@ -530,6 +638,11 @@ public class CoffeeLedger {
         throw new IllegalArgumentException("invalid table name: " + tableName);
     }
 
+    /**
+     * retrieves relevant data from all rows of 'orders' as a list of TopicItems
+     * @return all rows of 'orders' as a list of TopicItems
+     * @throws SQLException
+     */
     public List<TopicItem> getOrdersTable() throws SQLException {
         List<TopicItem> out = new ArrayList<TopicItem>();
 
@@ -548,6 +661,11 @@ public class CoffeeLedger {
         return out;
     }
 
+    /**
+     * retrieves relevant data from all rows of 'people' as a list of TopicItems
+     * @return all rows of 'people' as a list of TopicItems
+     * @throws SQLException
+     */
     public List<TopicItem> getPeopleTable() throws SQLException {
         List<TopicItem> out = new ArrayList<TopicItem>();
 
@@ -567,6 +685,11 @@ public class CoffeeLedger {
         return out;
     }
 
+    /**
+     * retrieves relevant data from all rows of 'group orders' as a list of TopicItems
+     * @return all rows of 'group orders' as a list of TopicItems
+     * @throws SQLException
+     */
     public List<TopicItem> getGroupOrdersTable() throws SQLException {
         List<TopicItem> out = new ArrayList<TopicItem>();
         for (String name : getColumn("name", "group_orders")) {
@@ -579,7 +702,7 @@ public class CoffeeLedger {
     }
 
     /**
-     * clears all tables of all rows
+     * clears all tables of all rows (except stored_vars)
      * @throws SQLException
      */
     public void clear() throws SQLException{
@@ -593,10 +716,20 @@ public class CoffeeLedger {
         stmt.close();
     }
 
+    /**
+     * checks if the provided table name refers to a valid table in the database
+     * @param tableName the provided table name
+     * @return true if tableName is an accessible table, false otherwise
+     */
     private boolean validTable(String tableName) {
         return accessibleTables.contains(tableName);
     }
 
+    /**
+     * checks if the provided column name refers to a valid column in the database
+     * @param tableName the provided column name
+     * @return true if colName is an accessible table, false otherwise
+     */
     private boolean validColumn(String colName) {
         return accessibleColumns.contains(colName);
     }

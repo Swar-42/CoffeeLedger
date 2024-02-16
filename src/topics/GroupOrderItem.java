@@ -4,6 +4,9 @@ import java.util.List;
 
 import input.OptionSelect;
 
+/**
+ * Describes a TopicItem of the GROUP_ORDER type and its functionality
+ */
 public class GroupOrderItem extends TopicItem {
     
     public GroupOrderItem(List<String> values) {
@@ -12,6 +15,15 @@ public class GroupOrderItem extends TopicItem {
 
     @Override
     public TopicItem mainMenu() {
+        /*
+         * Note: adding/editing individual orders within a group order is not currently implemented. 
+         * Implementation of this functionality could involve creating another TopicType PERSON_ORDER
+         * corresponding to a specific person's order within a group order.
+         * With that TopicType, a corresponding menu, list, and item class would be extended from the abstract implementations.
+         * Values for PERSON_ORDER could be retrieved from a temporary JOINed table with people.name and order.name.
+         * Adding items would be inserting a new row into group_order_details according to the database (new database methods may need to be implemented).
+         */
+
         List<String> options = new ArrayList<String>();
         options.add("Edit name");
         // options.add("Add/Edit individual orders");

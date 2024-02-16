@@ -8,9 +8,15 @@ import input.BooleanSelect;
 import input.Input;
 import input.OptionSelect;
 
+/**
+ * Describes a base menu CLI for interacting with a particular topic.
+ */
 public abstract class TopicMenu extends Topic {
     protected static CoffeeLedger db = CoffeeLedger.getInstance();
-     
+    
+    /**
+     * main point of entry
+     */
     public void mainMenu() {
         int choice = baseChoice();
         switch (choice) {
@@ -31,6 +37,10 @@ public abstract class TopicMenu extends Topic {
         mainMenu();
     }
 
+    /**
+     * main menu for adding a new TopicItem
+     * @return the new TopicItem added. null if none added.
+     */
     public TopicItem addItemMenu() {
         String name = Input.getString("Enter the name for the new " + type + ": ");
         // check for existence of 'name'
@@ -39,10 +49,12 @@ public abstract class TopicMenu extends Topic {
                 BooleanSelect overwritePrompt = new BooleanSelect(type + " \"" + name + "\" already exists. Edit this existing " + type + " instead?");
                 boolean editExisting = overwritePrompt.prompt();
                 if (editExisting) {
+                    // go to existing item's menu and return that item.
                     TopicItem item = db.getItem(type.tableName(), name);
                     System.out.println();
                     return item.mainMenu();
                 }
+                // return existing item without going to its menu
                 System.out.println("The " + type + " \"" + name + "\" will not be changed.");
                 return db.getItem(type.tableName(), name);
             }
@@ -51,9 +63,13 @@ public abstract class TopicMenu extends Topic {
             e.printStackTrace();
             return null;
         }
+        // Item does not exist, so we can safely add it
         return addItem(name);
     }
 
+    /**
+     * main menu for displaying a list of TopicItems using a TopicList
+     */
     public void listMenu() {
         TopicList topicList = makeTopicList();
         TopicItem item = topicList.getSelection("Select an item from the above.", false);
@@ -67,6 +83,10 @@ public abstract class TopicMenu extends Topic {
         listMenu();
     }
 
+    /**
+     * makes a TopicList item of the corresponding TopicType
+     * @return
+     */
     public TopicList makeTopicList() {
         switch (type) {
             case PERSON:
@@ -80,6 +100,10 @@ public abstract class TopicMenu extends Topic {
         }
     }
 
+    /**
+     * the base options of a TopicMenu
+     * @return
+     */
     private int baseChoice() {
         List<String> options = new ArrayList<String>();
         options.add("Add new " + type);
@@ -88,5 +112,10 @@ public abstract class TopicMenu extends Topic {
         return optionSelect.prompt();
     }
 
+    /**
+     * CLI for adding a TopicItem of the given name to the database according to a child class's specifications (differ for each TopicType).
+     * @param name name of the TopicItem to add
+     * @return
+     */
     protected abstract TopicItem addItem(String name);
 }

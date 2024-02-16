@@ -2,11 +2,19 @@ package input;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * describes a class for getting a user's decision between an enumerated amount of options.
+ */
 public class OptionSelect {
+    // title to prompt the user with
     private String title;
+    // list of options for the user to select from
     private List<String> options;
+    // string to display as the exit/back option
     private String exitString;
+    // the size of options
     private int numOptions;
+    // display the title text above or below the list of options
     private boolean titleAbove = true;
 
     public OptionSelect(String title, List<String> options, String exitString) {
@@ -23,6 +31,10 @@ public class OptionSelect {
         this.numOptions = numOptions;
     }
 
+    /**
+     * prompts the user with a number of options and returns their validated input.
+     * @return user's valid choice between a number of options
+     */
     public int prompt() {
         while (true) {
             if (titleAbove) System.out.println(title);
@@ -42,6 +54,10 @@ public class OptionSelect {
         }
     }
 
+    /**
+     * set the object to display its title above or below the list of options
+     * @param choice
+     */
     public void displayTitleAbove(boolean choice) {
         titleAbove = choice;
     }

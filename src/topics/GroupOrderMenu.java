@@ -6,6 +6,9 @@ import java.util.Map;
 
 import input.BooleanSelect;
 
+/**
+ * Describes an TopicMenu of the GROUP_ORDER TopicType
+ */
 public class GroupOrderMenu extends TopicMenu {
 
     @Override
@@ -19,6 +22,7 @@ public class GroupOrderMenu extends TopicMenu {
         Map<String, String> orderMap = new HashMap<String, String>();
         BooleanSelect continuePrompt = new BooleanSelect("Add another person to the group order?");
 
+        // loop to add person-order pairs to the group order
         do {
             TopicList listSelect = new PersonList();
             TopicItem item = listSelect.getSelection("Choose a person above to add to the order.", true);
@@ -35,6 +39,7 @@ public class GroupOrderMenu extends TopicMenu {
             orderMap.put(personName, orderName);
         } while (continuePrompt.prompt());
 
+        // no-one added
         if (orderMap.isEmpty()) {
             System.out.println("Group Order \"" + name + "\" cancelled.");
             System.out.println();

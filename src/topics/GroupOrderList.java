@@ -1,5 +1,8 @@
 package topics;
 
+/**
+ * Describes a TopicList of the GROUP_ORDER TopicType
+ */
 public class GroupOrderList extends TopicList {
 
     @Override

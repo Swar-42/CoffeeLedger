@@ -4,6 +4,9 @@ import java.util.List;
 
 import input.Input;
 
+/**
+ * Describes a TopicItem of the PERSON TopicType
+ */
 public class PersonItem extends TopicItem {
 
     public PersonItem(List<String> values) {
