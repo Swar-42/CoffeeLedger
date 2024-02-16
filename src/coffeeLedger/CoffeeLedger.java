@@ -76,7 +76,7 @@ public class CoffeeLedger {
      */
     public void init() throws SQLException, IOException {
         // initialize script
-        runScript("resources/init.sql");
+        runScript("/init.sql");
     }
 
     /**
@@ -626,7 +626,7 @@ public class CoffeeLedger {
     }
 
     private void runScript(String filepath) throws SQLException, IOException {
-        InputStreamReader isr = new InputStreamReader(new FileInputStream(filepath));
+        InputStreamReader isr = new InputStreamReader(getClass().getResourceAsStream(filepath));
         RunScript.execute(conn, isr);
         isr.close();
     }
