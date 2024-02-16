@@ -53,7 +53,7 @@ public abstract class TopicList extends Topic {
         } else if (choice == list.size()+1 && addItem) { // add and select a new TopicItem
             TopicMenu addMenu = makeTopicMenu();
             System.out.println();
-            TopicItem newItem = addMenu.addItemMenu();
+            TopicItem newItem = addMenu.addItemMenu(false);
             list.add(newItem);
         }
 

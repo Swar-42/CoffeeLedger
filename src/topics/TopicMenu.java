@@ -22,7 +22,7 @@ public abstract class TopicMenu extends Topic {
         switch (choice) {
             case 1:
                 System.out.println();
-                addItemMenu();
+                addItemMenu(true);
                 System.out.println();
                 break;
             case 2:
@@ -41,18 +41,22 @@ public abstract class TopicMenu extends Topic {
      * main menu for adding a new TopicItem
      * @return the new TopicItem added. null if none added.
      */
-    public TopicItem addItemMenu() {
+    public TopicItem addItemMenu(boolean canEditExisting) {
         String name = Input.getString("Enter the name for the new " + type + ": ");
         // check for existence of 'name'
         try {
             if (db.dataExists("name", type.tableName(), "\'" + name + "\'")) {
-                BooleanSelect overwritePrompt = new BooleanSelect(type + " \"" + name + "\" already exists. Edit this existing " + type + " instead?");
-                boolean editExisting = overwritePrompt.prompt();
-                if (editExisting) {
+                System.out.println(type + " \"" + name + "\" already exists.");
+                boolean doEdit = false;
+                if (canEditExisting) {
+                    BooleanSelect overwritePrompt = new BooleanSelect("Edit the existing " + type + " \"" + name + "\" instead?");
+                    doEdit = overwritePrompt.prompt();
+                }
+                if (doEdit) {
                     // go to existing item's menu and return that item.
                     TopicItem item = db.getItem(type.tableName(), name);
                     System.out.println();
-                    return item.mainMenu();
+                    return item.mainMenu(false);
                 }
                 // return existing item without going to its menu
                 System.out.println("The " + type + " \"" + name + "\" will not be changed.");
@@ -78,7 +82,7 @@ public abstract class TopicMenu extends Topic {
             return;
         }
         
-        item.mainMenu();
+        item.mainMenu(true);
         System.out.println();
         listMenu();
     }

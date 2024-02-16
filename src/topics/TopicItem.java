@@ -30,21 +30,24 @@ public abstract class TopicItem extends Topic {
     /**
      * Command-line main point of entry for modifying this TopicItem.
      * modification options include editing of any value as well as deletion of the TopicItem.
+     * @param canDelete true if user has permission to delete this topicItem at this time.
      * @return this TopicItem, or null if this TopicItem has been deleted from the database.
      */
-    public TopicItem mainMenu() {
+    public TopicItem mainMenu(boolean canDelete) {
         List<String> editOptions = new ArrayList<String>();
         for (String name : colNames) {
             editOptions.add("Edit " + name);
         }
-        editOptions.add("Delete " + type);
+        if (canDelete) {
+            editOptions.add("Delete " + type);
+        }
         OptionSelect editSelect = new OptionSelect("Selected: " + this.toString(), editOptions, "Back");
         int choice = editSelect.prompt();
         
         if (choice > 0 && choice <= values.size()) {
             System.out.println();
             editColumn(choice-1);
-        } else if (choice == values.size() + 1) {
+        } else if (choice == values.size() + 1 && canDelete) {
             System.out.println();
             boolean deleted = deleteItem();
             if (deleted) return null;
@@ -53,7 +56,7 @@ public abstract class TopicItem extends Topic {
         }
 
         System.out.println();
-        return mainMenu();
+        return mainMenu(canDelete);
     }
 
     /**

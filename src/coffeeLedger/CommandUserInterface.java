@@ -84,7 +84,7 @@ public class CommandUserInterface {
         }
         while (groupOrder == null) {
             TopicMenu groupOrderMenu = new GroupOrderMenu();
-            groupOrder = groupOrderMenu.addItemMenu();
+            groupOrder = groupOrderMenu.addItemMenu(true);
         }
         System.out.println("Processing group order \"" + groupOrder.getName() + "\".");
         updateBought(groupOrder.getName());

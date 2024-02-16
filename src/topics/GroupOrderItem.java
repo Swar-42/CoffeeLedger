@@ -14,7 +14,7 @@ public class GroupOrderItem extends TopicItem {
     }
 
     @Override
-    public TopicItem mainMenu() {
+    public TopicItem mainMenu(boolean canDelete) {
         /*
          * Note: adding/editing individual orders within a group order is not currently implemented. 
          * Implementation of this functionality could involve creating another TopicType PERSON_ORDER
@@ -27,7 +27,9 @@ public class GroupOrderItem extends TopicItem {
         List<String> options = new ArrayList<String>();
         options.add("Edit name");
         // options.add("Add/Edit individual orders");
-        options.add("Delete group order");
+        if (canDelete) {
+            options.add("Delete group order");
+        }
         OptionSelect select = new OptionSelect("Selected: " + this.toString(), options, "Back");
         int choice = select.prompt();
 
@@ -41,15 +43,17 @@ public class GroupOrderItem extends TopicItem {
             //     // add/edit individual orders
             //     break;
             case 2:
+                if (!canDelete) break;
                 System.out.println();
                 boolean deleted = deleteItem();
                 if (deleted) return null;
+                break;
             case 0:
                 return this;
         }
 
         System.out.println();
-        return mainMenu();
+        return mainMenu(canDelete);
     }
 
     @Override
